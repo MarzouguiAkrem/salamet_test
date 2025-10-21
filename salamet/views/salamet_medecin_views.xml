@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue formulaire médecin -->
+        <record id="view_salamet_medecin_form" model="ir.ui.view">
+            <field name="name">salamet.medecin.form</field>
+            <field name="model">salamet.medecin</field>
+            <field name="arch" type="xml">
+                <form string="Fiche Médecin">
+                    <header>
+                        <!-- Boutons d'action rapide -->
+                        <button name="action_view_patientes" type="object"
+                                string="Voir Patientes" class="btn-primary"
+                                invisible="nombre_patientes == 0"/>
+                        <button name="action_view_grossesses" type="object"
+                                string="Voir Grossesses" class="btn-secondary"
+                                invisible="nombre_grossesses_referent == 0"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <!-- Boutons statistiques améliorés -->
+                            <button name="action_view_patientes" type="object"
+                                    class="oe_stat_button" icon="fa-users">
+                                <field name="nombre_patientes" widget="statinfo" string="Patientes"/>
+                            </button>
+                            <button name="action_view_grossesses" type="object"
+                                    class="oe_stat_button" icon="fa-baby">
+                                <field name="nombre_grossesses_referent" widget="statinfo" string="Grossesses"/>
+                            </button>
+                        </div>
+
+                        <!-- Badge de statut -->
+                        <widget name="web_ribbon" title="Archivé" bg_color="bg-danger"
+                                invisible="active"/>
+
+                        <div class="oe_title">
+                            <label for="nom_complet" class="oe_edit_only"/>
+                            <h1>
+                                <field name="nom_complet" placeholder="Nom et prénom du médecin"
+                                       required="1" class="o_text_overflow"/>
+                            </h1>
+                            <h2>
+                                <field name="statut" widget="badge"
+                                       decoration-success="statut == 'senior'"
+                                       decoration-info="statut == 'resident'"
+                                       decoration-warning="statut == 'interne'"/>
+                            </h2>
+                        </div>
+
+                        <group>
+                            <group string="📞 Informations de contact">
+                                <field name="phone" widget="phone" required="1"/>
+                                <field name="email" widget="email" required="1"/>
+                                <field name="street" placeholder="Adresse complète"/>
+                                <field name="city" placeholder="Ville"/>
+                                <field name="zip" placeholder="Code postal"/>
+                                <field name="country_id" options="{'no_create': True, 'no_open': True}"/>
+                            </group>
+
+                            <group string="🏥 Informations professionnelles">
+                                <field name="statut" required="1"/>
+                                <field name="faculte_origine" required="1"
+                                       placeholder="Ex: Faculté de Médecine de Casablanca"/>
+                                <field name="lieu_exercice" required="1"
+                                       placeholder="Ex: CHU Ibn Rochd"/>
+                                <field name="specialite"
+                                       placeholder="Ex: Gynécologie-Obstétrique"
+                                       required="statut == 'senior'"
+                                       invisible="statut == 'resident'"/>
+                            </group>
+                        </group>
+
+                        <!-- Section administrative -->
+                        <group string="⚙️ Informations système" groups="base.group_system">
+                            <group>
+                                <field name="active"/>
+                                <field name="partner_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="create_date" readonly="1"/>
+                                <field name="write_date" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="👥 Patientes suivies" name="patients">
+                                <!-- 🔧 CORRECTION: Remplacer active_id par id -->
+                                <field name="patiente_ids" context="{'default_medecin_ids': [(6, 0, [id])]}">
+                                    <list editable="bottom" decoration-muted="not active">
+                                        <field name="nom_complet"/>
+                                        <field name="age"/>
+                                        <field name="telephone" widget="phone"/>
+                                        <field name="groupe_sanguin" widget="badge"/>
+                                        <field name="date_naissance"/>
+                                        <field name="active" invisible="1"/>
+                                        <button name="action_view_grossesses" type="object"
+                                                icon="fa-baby" title="Voir grossesses"
+                                                class="btn-link"/>
+                                    </list>
+                                </field>
+                                <div class="oe_clear"/>
+                                <p class="text-muted" invisible="nombre_patientes > 0">
+                                    <i class="fa fa-info-circle"/> Aucune patiente assignée à ce médecin.
+                                </p>
+                            </page>
+
+                            <page string="🤱 Grossesses en référent" name="pregnancies">
+                                <!-- 🔧 CORRECTION: Remplacer active_id par id -->
+                                <field name="grossesse_referent_ids"
+                                       context="{'default_medecin_referent_id': id}">
+                                    <list decoration-success="state == 'en_cours'"
+                                          decoration-muted="state == 'terminee'"
+                                          decoration-warning="state == 'a_risque'"
+                                          decoration-danger="state == 'urgence'">
+                                        <field name="patiente_id"/>
+                                        <field name="date_debut"/>
+                                        <field name="date_prevue_accouchement"/>
+                                        <field name="terme_actuel" string="Terme"/>
+                                        <field name="state" widget="badge"/>
+                                        <button name="action_view_consultations" type="object"
+                                                icon="fa-stethoscope" title="Consultations"
+                                                class="btn-link"/>
+                                    </list>
+                                </field>
+                                <div class="oe_clear"/>
+                                <p class="text-muted" invisible="nombre_grossesses_referent > 0">
+                                    <i class="fa fa-info-circle"/> Aucune grossesse en référent.
+                                </p>
+                            </page>
+
+                            <page string="👨‍⚕️ Équipes médicales" name="teams">
+                                <!-- 🔧 CORRECTION: Remplacer active_id par id -->
+                                <field name="equipe_medicale_ids"
+                                       context="{'default_medecin_id': id}">
+                                    <list decoration-success="active == True"
+                                          decoration-muted="active == False">
+                                        <field name="role" widget="badge"/>
+                                        <field name="date_debut"/>
+                                        <field name="date_fin"/>
+                                        <field name="active" widget="boolean_toggle"/>
+                                    </list>
+                                </field>
+                                <div class="oe_clear"/>
+                                <p class="text-muted" invisible="equipe_medicale_ids">
+                                    <i class="fa fa-info-circle"/> Aucune participation aux équipes médicales.
+                                </p>
+                            </page>
+
+                            <!-- Page statistiques -->
+                            <page string="📊 Statistiques" name="stats">
+                                <group>
+                                    <group string="Activité">
+                                        <field name="nombre_patientes" readonly="1"/>
+                                        <field name="nombre_grossesses_referent" readonly="1"/>
+                                    </group>
+                                    <group string="Informations">
+                                        <field name="create_date" string="Date de création" readonly="1"/>
+                                        <field name="write_date" string="Dernière modification" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue liste médecins améliorée -->
+        <record id="view_salamet_medecin_tree" model="ir.ui.view">
+            <field name="name">salamet.medecin.tree</field>
+            <field name="model">salamet.medecin</field>
+            <field name="arch" type="xml">
+                <list string="Médecins"
+                      decoration-success="statut == 'senior'"
+                      decoration-info="statut == 'resident'"
+                      decoration-muted="not active"
+                      multi_edit="1">
+                    <field name="nom_complet" string="Nom et prénom"/>
+                    <field name="statut" widget="badge"
+                           decoration-success="statut == 'senior'"
+                           decoration-info="statut == 'resident'"/>
+                    <field name="phone" widget="phone"/>
+                    <field name="email" widget="email"/>
+                    <field name="faculte_origine"/>
+                    <field name="lieu_exercice"/>
+                    <field name="specialite" optional="hide"/>
+                    <field name="nombre_patientes" string="Patientes" sum="Total patientes"/>
+                    <field name="nombre_grossesses_referent" string="Grossesses" sum="Total grossesses"/>
+                    <field name="active" widget="boolean_toggle"/>
+
+                    <!-- Boutons d'action -->
+                    <button name="action_view_patientes" type="object"
+                            icon="fa-users" title="Voir patientes"
+                            invisible="nombre_patientes == 0"/>
+                    <button name="action_view_grossesses" type="object"
+                            icon="fa-baby" title="Voir grossesses"
+                            invisible="nombre_grossesses_referent == 0"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue kanban médecins améliorée -->
+        <record id="view_salamet_medecin_kanban" model="ir.ui.view">
+            <field name="name">salamet.medecin.kanban</field>
+            <field name="model">salamet.medecin</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="statut" class="o_kanban_small_column">
+                    <field name="nom_complet"/>
+                    <field name="statut"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="lieu_exercice"/>
+                    <field name="specialite"/>
+                    <field name="nombre_patientes"/>
+                    <field name="nombre_grossesses_referent"/>
+                    <field name="active"/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click #{!record.active.raw_value ? 'o_kanban_color_muted' : ''}">
+                                <div class="o_kanban_image">
+                                    <img t-att-src="kanban_image('salamet.medecin', 'avatar_128', record.id.raw_value)"
+                                         alt="Médecin" class="o_kanban_image_inner_pic"/>
+                                </div>
+
+                                <div class="oe_kanban_details">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="nom_complet"/>
+                                            </strong>
+                                            <small t-if="record.specialite.raw_value" class="text-muted">
+                                                <field name="specialite"/>
+                                            </small>
+                                        </div>
+                                        <div class="o_kanban_manage_button_section">
+                                            <a class="o_kanban_manage_toggle_button" href="#">
+                                                <i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="o_kanban_tags_section">
+                                        <span class="badge"
+                                              t-att-class="record.statut.raw_value == 'senior' ? 'badge-success' : 'badge-info'">
+                                            <field name="statut"/>
+                                        </span>
+                                        <span t-if="!record.active.raw_value" class="badge badge-secondary">
+                                            Archivé
+                                        </span>
+                                    </div>
+
+                                    <ul class="o_kanban_record_body">
+                                        <li t-if="record.phone.raw_value">
+                                            <i class="fa fa-phone"/> <field name="phone"/>
+                                        </li>
+                                        <li t-if="record.email.raw_value">
+                                            <i class="fa fa-envelope"/> <field name="email"/>
+                                        </li>
+                                        <li t-if="record.lieu_exercice.raw_value">
+                                            <i class="fa fa-hospital-o"/> <field name="lieu_exercice"/>
+                                        </li>
+                                    </ul>
+
+                                    <div class="o_kanban_record_bottom">
+                                        <div class="oe_kanban_bottom_left">
+                                            <span class="badge badge-pill badge-secondary"
+                                                  t-if="record.nombre_patientes.raw_value > 0">
+                                                <field name="nombre_patientes"/> patientes
+                                            </span>
+                                            <span class="badge badge-pill badge-info"
+                                                  t-if="record.nombre_grossesses_referent.raw_value > 0">
+                                                <field name="nombre_grossesses_referent"/> grossesses
+                                            </span>
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <field name="active" widget="boolean_toggle"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Menu de gestion -->
+                                <div class="o_kanban_manage_button_section">
+                                    <div class="o_kanban_manage_button_section">
+                                        <button name="action_view_patientes" type="object"
+                                                class="btn btn-sm btn-primary"
+                                                t-if="record.nombre_patientes.raw_value > 0">
+                                            Patientes
+                                        </button>
+                                        <button name="action_view_grossesses" type="object"
+                                                class="btn btn-sm btn-secondary"
+                                                t-if="record.nombre_grossesses_referent.raw_value > 0">
+                                            Grossesses
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue recherche médecins améliorée -->
+        <record id="view_salamet_medecin_search" model="ir.ui.view">
+            <field name="name">salamet.medecin.search</field>
+            <field name="model">salamet.medecin</field>
+            <field name="arch" type="xml">
+                <search string="Rechercher Médecins">
+                    <!-- Champs de recherche -->
+                    <field name="nom_complet" string="Nom et prénom"
+                           filter_domain="['|', ('nom_complet', 'ilike', self), ('email', 'ilike', self)]"/>
+                    <field name="phone" string="Téléphone"/>
+                    <field name="email" string="Email"/>
+                    <field name="statut" string="Statut"/>
+                    <field name="faculte_origine" string="Faculté d'origine"/>
+                    <field name="lieu_exercice" string="Lieu d'exercice"/>
+                    <field name="specialite" string="Spécialité"/>
+
+                    <!-- Filtres prédéfinis -->
+                    <separator/>
+                    <filter string="Médecins Seniors" name="senior"
+                            domain="[('statut', '=', 'senior')]"/>
+                    <filter string="Médecins Résidents" name="resident"
+                            domain="[('statut', '=', 'resident')]"/>
+                    <separator/>
+                    <filter string="Actifs" name="active"
+                            domain="[('active', '=', True)]"/>
+                    <filter string="Archivés" name="inactive"
+                            domain="[('active', '=', False)]"/>
+                    <separator/>
+                    <filter string="Avec patientes" name="with_patients"
+                            domain="[('nombre_patientes', '>', 0)]"/>
+                    <filter string="Avec grossesses" name="with_pregnancies"
+                            domain="[('nombre_grossesses_referent', '>', 0)]"/>
+                    <filter string="Sans patientes" name="without_patients"
+                            domain="[('nombre_patientes', '=', 0)]"/>
+
+                    <!-- Filtres par date -->
+                    <separator/>
+                    <filter string="Créés cette semaine" name="created_this_week"
+                            domain="[('create_date', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Créés ce mois" name="created_this_month"
+                            domain="[('create_date', '>=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+
+                    <!-- Groupements -->
+                    <group expand="0" string="Grouper par">
+                        <filter string="Statut" name="group_by_statut"
+                                context="{'group_by': 'statut'}"/>
+                        <filter string="Faculté d'origine" name="group_by_faculte"
+                                context="{'group_by': 'faculte_origine'}"/>
+                        <filter string="Lieu d'exercice" name="group_by_lieu"
+                                context="{'group_by': 'lieu_exercice'}"/>
+                        <filter string="Spécialité" name="group_by_specialite"
+                                context="{'group_by': 'specialite'}"/>
+                        <filter string="Date de création" name="group_by_create_date"
+                                context="{'group_by': 'create_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action médecins standard -->
+        <record id="action_salamet_medecin" model="ir.actions.act_window">
+            <field name="name">Médecins</field>
+            <field name="res_model">salamet.medecin</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="search_view_id" ref="view_salamet_medecin_search"/>
+            <field name="context">{
+                'search_default_active': 1,
+                'search_default_group_by_statut': 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouveau médecin
+                </p>
+                <p>
+                    Ajoutez les médecins qui travaillent avec le système SALAMET.<br/>
+                    Chaque médecin sera automatiquement ajouté comme contact dans votre carnet d'adresses.
+                </p>
+                <p>
+                    <strong>Fonctionnalités :</strong><br/>
+                    • Suivi des patientes assignées<br/>
+                    • Gestion des grossesses en référent<br/>
+                    • Participation aux équipes médicales<br/>
+                    • Synchronisation automatique des contacts
+                </p>
+            </field>
+        </record>
+
+        <!-- Action médecins pour admin -->
+        <record id="action_salamet_medecin_admin" model="ir.actions.act_window">
+            <field name="name">Gestion des Médecins (Admin)</field>
+            <field name="res_model">salamet.medecin</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="search_view_id" ref="view_salamet_medecin_search"/>
+            <field name="context">{
+                'default_statut': 'senior'
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Administration des médecins
+                </p>
+                <p>
+                    Interface d'administration complète pour la gestion des médecins SALAMET.<br/>
+                    Accès à toutes les fonctionnalités avancées et statistiques.
+                </p>
+            </field>
+        </record>
+<!-- Action pour nouveau médecin -->
+<record id="action_salamet_nouveau_medecin" model="ir.actions.act_window">
+    <field name="name">Nouveau Médecin</field>
+    <field name="res_model">salamet.medecin</field>
+    <field name="view_mode">form</field>
+    <field name="target">current</field>
+    <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+            Ajouter un nouveau médecin
+        </p>
+        <p>
+            Enregistrez un nouveau membre de l'équipe médicale.
+        </p>
+    </field>
+</record>
+
+    </data>
+</odoo>

@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ========================================================================
+             CATÉGORIE DE SÉCURITÉ
+             ======================================================================== -->
+        <record id="module_category_salamet" model="ir.module.category">
+            <field name="name">SALAMET</field>
+            <field name="description">Gestion médicale des grossesses à risque</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- ========================================================================
+             GROUPES DE SÉCURITÉ AVEC HIÉRARCHIE
+             ======================================================================== -->
+
+        <!-- Groupe Patiente avec accès Portal -->
+        <record id="group_salamet_patiente" model="res.groups">
+            <field name="name">SALAMET Patiente</field>
+            <field name="category_id" ref="module_category_salamet"/>
+            <!-- ✅ CHANGEMENT : Utiliser base.group_portal au lieu de base.group_user -->
+            <field name="implied_ids" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="comment">Accès Portal limité aux propres données de la patiente uniquement</field>
+        </record>
+
+        <!-- Groupe Lecture seule -->
+        <record id="group_salamet_readonly" model="res.groups">
+            <field name="name">SALAMET Lecture seule</field>
+            <field name="category_id" ref="module_category_salamet"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Accès en lecture seule aux données SALAMET</field>
+        </record>
+
+        <!-- Groupe Médecin Résident -->
+        <record id="group_salamet_medecin_resident" model="res.groups">
+            <field name="name">SALAMET Médecin Résident</field>
+            <field name="category_id" ref="module_category_salamet"/>
+            <field name="implied_ids" eval="[(4, ref('group_salamet_readonly'))]"/>
+            <field name="comment">Médecin résident avec droits limités à ses patientes assignées</field>
+        </record>
+
+        <!-- Groupe Médecin Senior -->
+        <record id="group_salamet_medecin_senior" model="res.groups">
+            <field name="name">SALAMET Médecin Senior</field>
+            <field name="category_id" ref="module_category_salamet"/>
+            <field name="implied_ids" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="comment">Médecin senior avec droits étendus</field>
+        </record>
+
+        <!-- Groupe Administrateur -->
+        <record id="group_salamet_admin" model="res.groups">
+            <field name="name">SALAMET Administrateur</field>
+            <field name="category_id" ref="module_category_salamet"/>
+            <field name="implied_ids" eval="[(4, ref('group_salamet_medecin_senior'))]"/>
+            <field name="comment">Administrateur avec accès complet</field>
+        </record>
+
+        <!-- ========================================================================
+             RÈGLES D'ACCÈS POUR RES.USERS
+             Permettre aux utilisateurs de voir leur propre profil
+             ======================================================================== -->
+
+        <!-- Patiente Portal: Accès à son propre utilisateur res.users -->
+        <record id="salamet_rule_res_users_patiente_own" model="ir.rule">
+            <field name="name">Patiente Portal: Voir son propre utilisateur</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="domain_force">[('id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Médecin Résident: Accès à son propre utilisateur -->
+        <record id="salamet_rule_res_users_medecin_resident_own" model="ir.rule">
+            <field name="name">Médecin Résident: Voir son propre utilisateur</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="domain_force">[('id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Médecin Senior: Accès à tous les utilisateurs -->
+        <record id="salamet_rule_res_users_medecin_senior_all" model="ir.rule">
+            <field name="name">Médecin Senior: Voir tous les utilisateurs</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ========================================================================
+             RÈGLES D'ACCÈS POUR LES PATIENTES PORTAL
+             Une patiente ne peut voir QUE ses propres données
+             ======================================================================== -->
+
+        <!-- Patiente Portal: Accès à son propre profil -->
+        <record id="salamet_rule_patiente_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir son propre profil</field>
+            <field name="model_id" ref="model_salamet_patiente"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Accès à ses propres grossesses -->
+        <record id="salamet_rule_grossesse_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses propres grossesses</field>
+            <field name="model_id" ref="model_salamet_grossesse"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Accès à ses propres consultations -->
+        <record id="salamet_rule_consultation_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses propres consultations</field>
+            <field name="model_id" ref="model_salamet_consultation"/>
+            <field name="domain_force">[('grossesse_id.patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Accès à ses propres bilans prénataux -->
+        <record id="salamet_rule_bilan_prenatal_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses propres bilans</field>
+            <field name="model_id" ref="model_salamet_bilan_prenatal"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Accès à ses propres échographies -->
+        <record id="salamet_rule_echographie_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses propres échographies</field>
+            <field name="model_id" ref="model_salamet_echographie"/>
+            <field name="domain_force">[('grossesse_id.patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Accès à ses propres accouchements -->
+        <record id="salamet_rule_accouchement_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses propres accouchements</field>
+            <field name="model_id" ref="model_salamet_accouchement"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Accès à ses propres notifications -->
+        <record id="salamet_rule_notification_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses propres notifications</field>
+            <field name="model_id" ref="model_salamet_notification"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Examens hématologie -->
+        <record id="salamet_rule_examen_hematologie_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses examens hématologie</field>
+            <field name="model_id" ref="model_salamet_examen_hematologie"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Examens biochimie -->
+        <record id="salamet_rule_examen_biochimie_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses examens biochimie</field>
+            <field name="model_id" ref="model_salamet_examen_biochimie"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Sérologies -->
+        <record id="salamet_rule_serologie_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses sérologies</field>
+            <field name="model_id" ref="model_salamet_serologie"/>
+            <field name="domain_force">[('patiente_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Examens biologiques détaillés -->
+        <record id="salamet_rule_examen_biologique_own_data" model="ir.rule">
+            <field name="name">Patiente Portal: Voir ses examens biologiques</field>
+            <field name="model_id" ref="model_salamet_examen_biologique"/>
+            <field name="domain_force">[('patient_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Pathologies (référence - lecture seule) -->
+        <record id="salamet_rule_pathologie_patiente" model="ir.rule">
+            <field name="name">Patiente Portal: Voir les pathologies</field>
+            <field name="model_id" ref="model_salamet_pathologie"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Facteurs de risque (référence - lecture seule) -->
+        <record id="salamet_rule_facteur_risque_patiente" model="ir.rule">
+            <field name="name">Patiente Portal: Voir les facteurs de risque</field>
+            <field name="model_id" ref="model_salamet_facteur_risque"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Médecins (lecture seule) -->
+        <record id="salamet_rule_medecin_patiente" model="ir.rule">
+            <field name="name">Patiente Portal: Voir les médecins</field>
+            <field name="model_id" ref="model_salamet_medecin"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patiente Portal: Équipes médicales (lecture seule) -->
+        <record id="salamet_rule_equipe_medicale_patiente" model="ir.rule">
+            <field name="name">Patiente Portal: Voir les équipes médicales</field>
+            <field name="model_id" ref="model_salamet_equipe_medicale"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_patiente'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ========================================================================
+             RÈGLES D'ACCÈS POUR LES MÉDECINS RÉSIDENTS
+             Un médecin ne peut voir QUE ses patientes assignées
+             ======================================================================== -->
+
+        <record id="salamet_rule_patiente_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir ses patientes</field>
+            <field name="model_id" ref="model_salamet_patiente"/>
+            <field name="domain_force">['|', ('medecin_ids', 'in', [user.id]), ('medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_grossesse_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les grossesses</field>
+            <field name="model_id" ref="model_salamet_grossesse"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_consultation_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les consultations</field>
+            <field name="model_id" ref="model_salamet_consultation"/>
+            <field name="domain_force">['|', ('grossesse_id.patiente_id.medecin_ids', 'in', [user.id]), ('grossesse_id.patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_bilan_prenatal_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les bilans</field>
+            <field name="model_id" ref="model_salamet_bilan_prenatal"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_echographie_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les échographies</field>
+            <field name="model_id" ref="model_salamet_echographie"/>
+            <field name="domain_force">['|', ('grossesse_id.patiente_id.medecin_ids', 'in', [user.id]), ('grossesse_id.patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_accouchement_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les accouchements</field>
+            <field name="model_id" ref="model_salamet_accouchement"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_notification_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les notifications</field>
+            <field name="model_id" ref="model_salamet_notification"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_examen_hematologie_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les examens hématologie</field>
+            <field name="model_id" ref="model_salamet_examen_hematologie"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_examen_biochimie_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les examens biochimie</field>
+            <field name="model_id" ref="model_salamet_examen_biochimie"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_serologie_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les sérologies</field>
+            <field name="model_id" ref="model_salamet_serologie"/>
+            <field name="domain_force">['|', ('patiente_id.medecin_ids', 'in', [user.id]), ('patiente_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="salamet_rule_examen_biologique_medecin_resident" model="ir.rule">
+            <field name="name">Médecin Résident: Voir les examens biologiques</field>
+            <field name="model_id" ref="model_salamet_examen_biologique"/>
+            <field name="domain_force">['|', ('patient_id.medecin_ids', 'in', [user.id]), ('patient_id.medecin_ids.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_resident'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- ========================================================================
+             RÈGLES D'ACCÈS POUR LES MÉDECINS SENIORS ET ADMINS
+             Accès complet à toutes les données
+             ======================================================================== -->
+
+        <record id="salamet_rule_patiente_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Toutes les patientes</field>
+            <field name="model_id" ref="model_salamet_patiente"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+        </record>
+
+        <record id="salamet_rule_grossesse_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Toutes les grossesses</field>
+            <field name="model_id" ref="model_salamet_grossesse"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+        </record>
+
+        <record id="salamet_rule_consultation_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Toutes les consultations</field>
+            <field name="model_id" ref="model_salamet_consultation"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+        </record>
+
+        <record id="salamet_rule_bilan_prenatal_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Tous les bilans</field>
+            <field name="model_id" ref="model_salamet_bilan_prenatal"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+        </record>
+
+        <record id="salamet_rule_echographie_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Toutes les échographies</field>
+            <field name="model_id" ref="model_salamet_echographie"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+        </record>
+
+        <record id="salamet_rule_accouchement_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Tous les accouchements</field>
+            <field name="model_id" ref="model_salamet_accouchement"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+        </record>
+
+        <record id="salamet_rule_notification_senior_admin" model="ir.rule">
+            <field name="name">Senior/Admin: Toutes les notifications</field>
+            <field name="model_id" ref="model_salamet_notification"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+</record>
+    <record id="salamet_rule_examen_hematologie_senior_admin" model="ir.rule">
+        <field name="name">Senior/Admin: Tous les examens hématologie</field>
+        <field name="model_id" ref="model_salamet_examen_hematologie"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_examen_biochimie_senior_admin" model="ir.rule">
+        <field name="name">Senior/Admin: Tous les examens biochimie</field>
+        <field name="model_id" ref="model_salamet_examen_biochimie"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_serologie_senior_admin" model="ir.rule">
+        <field name="name">Senior/Admin: Toutes les sérologies</field>
+        <field name="model_id" ref="model_salamet_serologie"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_examen_biologique_senior_admin" model="ir.rule">
+        <field name="name">Senior/Admin: Tous les examens biologiques</field>
+        <field name="model_id" ref="model_salamet_examen_biologique"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <!-- ========================================================================
+         RÈGLES D'ACCÈS POUR LES DONNÉES DE RÉFÉRENCE
+         Accessibles à tous les utilisateurs SALAMET
+         ======================================================================== -->
+
+    <record id="salamet_rule_pathologie_all" model="ir.rule">
+        <field name="name">Tous: Pathologies</field>
+        <field name="model_id" ref="model_salamet_pathologie"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_patiente')), (4, ref('group_salamet_readonly')), (4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_facteur_risque_all" model="ir.rule">
+        <field name="name">Tous: Facteurs de risque</field>
+        <field name="model_id" ref="model_salamet_facteur_risque"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_patiente')), (4, ref('group_salamet_readonly')), (4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_medecin_readonly" model="ir.rule">
+        <field name="name">Lecture: Médecins</field>
+        <field name="model_id" ref="model_salamet_medecin"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_readonly')), (4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior'))]"/>
+    </record>
+
+    <record id="salamet_rule_medecin_admin" model="ir.rule">
+        <field name="name">Admin: Médecins</field>
+        <field name="model_id" ref="model_salamet_medecin"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_equipe_medicale_all" model="ir.rule">
+        <field name="name">Tous: Équipes médicales</field>
+        <field name="model_id" ref="model_salamet_equipe_medicale"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_readonly')), (4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_dashboard_all" model="ir.rule">
+        <field name="name">Tous: Dashboard</field>
+        <field name="model_id" ref="model_salamet_dashboard"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_readonly')), (4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <!-- ========================================================================
+         RÈGLES D'ACCÈS POUR RES.PARTNER
+         Tous les utilisateurs SALAMET peuvent accéder aux contacts
+         ======================================================================== -->
+
+    <record id="salamet_rule_partner_all" model="ir.rule">
+        <field name="name">SALAMET: Contacts</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_patiente')), (4, ref('group_salamet_readonly')), (4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <!-- ========================================================================
+         RÈGLES D'ACCÈS POUR LES WIZARDS
+         Accessibles uniquement aux médecins et admins
+         ======================================================================== -->
+
+    <record id="salamet_rule_notification_wizard_medecin" model="ir.rule">
+        <field name="name">Médecins: Wizard notifications</field>
+        <field name="model_id" ref="model_salamet_notification_wizard"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_notification_traitement_wizard_medecin" model="ir.rule">
+        <field name="name">Médecins: Wizard traitement notifications</field>
+        <field name="model_id" ref="model_salamet_notification_traitement_wizard"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_notification_report_wizard_medecin" model="ir.rule">
+        <field name="name">Médecins: Wizard rapports notifications</field>
+        <field name="model_id" ref="model_salamet_notification_report_wizard"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+
+    <record id="salamet_rule_bilan_interpretation_wizard_medecin" model="ir.rule">
+        <field name="name">Médecins: Wizards interprétation bilan</field>
+        <field name="model_id" ref="model_salamet_bilan_interpretation_wizard"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_salamet_medecin_resident')), (4, ref('group_salamet_medecin_senior')), (4, ref('group_salamet_admin'))]"/>
+    </record>
+      <record id="res_partner_portal_rule" model="ir.rule">
+            <field name="name">Portal User: Own Partner Only</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('id', '=', user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+</data>
+</odoo>

@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue formulaire patiente AMÉLIORÉE -->
+        <record id="view_salamet_patiente_form" model="ir.ui.view">
+            <field name="name">salamet.patiente.form</field>
+            <field name="model">salamet.patiente</field>
+            <field name="arch" type="xml">
+                <form string="Fiche Patiente SALAMET">
+                    <header>
+                        <!-- Boutons d'action rapide -->
+                        <button name="action_nouvelle_grossesse" type="object"
+                                string="Nouvelle Grossesse" class="btn-primary"
+                                invisible="est_enceinte == True"/>
+                        <button name="action_nouveau_bilan_prenatal" type="object"
+                                string="Nouveau Bilan" class="btn-secondary"
+                                invisible="est_enceinte == False"/>
+                        <button name="action_generer_notifications" type="object"
+                                string="Générer Surveillance" class="btn-warning"
+                                invisible="est_enceinte == False"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <!-- Smart buttons améliorés -->
+                            <button name="action_view_grossesses" type="object"
+                                    class="oe_stat_button" icon="fa-baby">
+                                <field name="nombre_grossesses" widget="statinfo" string="Grossesses"/>
+                            </button>
+                            <button name="action_view_accouchements" type="object"
+                                    class="oe_stat_button" icon="fa-heart">
+                                <field name="nombre_accouchements" widget="statinfo" string="Accouchements"/>
+                            </button>
+                            <!-- Smart button pour le niveau de risque -->
+                            <button class="oe_stat_button" icon="fa-exclamation-triangle">
+                                <field name="niveau_risque_global" widget="statinfo" string="Niveau Risque"/>
+                            </button>
+                        </div>
+
+                        <!-- En-tête avec badges de statut -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Nom et prénom de la patiente" required="1"/>
+                            </h1>
+                            <div class="o_row">
+                                <span invisible="est_enceinte == False" class="badge badge-success">
+                                    🤰 Enceinte
+                                </span>
+                                <span invisible="niveau_risque_global != 'tres_eleve'" class="badge badge-danger">
+                                    ⚠️ Très haut risque
+                                </span>
+                                <span invisible="niveau_risque_global != 'eleve'" class="badge badge-warning">
+                                    ⚠️ Haut risque
+                                </span>
+                                <!-- Badge spécial pour consanguinité -->
+                                <span invisible="consanguinite == False or degre_consanguinite != '1er'"
+                                      class="badge badge-danger">
+                                    🧬 Consanguinité 1er degré
+                                </span>
+                                <span invisible="consanguinite == False or degre_consanguinite not in ['2eme', '3eme']"
+                                      class="badge badge-warning">
+                                    🧬 Consanguinité <field name="degre_consanguinite"/>
+                                </span>
+                            </div>
+                        </div>
+
+                        <notebook>
+                            <!-- ONGLET 1: INFORMATIONS PERSONNELLES -->
+                            <page string="👤 Informations Personnelles" name="personal_info">
+                                <group>
+                                    <group string="Patiente">
+                                        <field name="date_naissance" required="1"/>
+                                        <field name="age" readonly="1"/>
+                                        <field name="profession"/>
+                                        <field name="telephone" widget="phone"/>
+                                                                                <field name="email" widget="email"/>
+                                    </group>
+                                    <group string="Conjoint">
+                                        <field name="nom_mari"/>
+                                        <field name="age_mari"/>
+                                        <field name="profession_mari"/>
+                                        <field name="telephone_mari" widget="phone"/>
+                                        <field name="email_mari" widget="email"/>
+                                    </group>
+                                </group>
+
+                                <group string="📍 Adresse">
+                                    <field name="adresse" nolabel="1" placeholder="Adresse complète..."/>
+                                </group>
+                            </page>
+
+                            <!-- ONGLET 2: INFORMATIONS MÉDICALES -->
+                            <page string="🏥 Informations Médicales" name="medical_info">
+                                <group>
+                                    <group string="Données physiques">
+                                        <field name="groupe_sanguin"/>
+                                        <field name="poids"/>
+                                        <field name="taille"/>
+                                        <field name="imc" readonly="1"/>
+                                    </group>
+                                    <group string="GPA (Gestité-Parité-Avortements)">
+                                        <field name="gestite"/>
+                                        <field name="parite"/>
+                                        <field name="avortements"/>
+                                    </group>
+                                </group>
+
+                                <group string="📝 Détails GPA">
+                                    <field name="gpa_details" nolabel="1"
+                                           placeholder="Détails des grossesses antérieures..."/>
+                                </group>
+
+                                <group string="👨‍⚕️ Équipe médicale">
+                                    <field name="medecin_ids" widget="many2many_tags"
+                                           options="{'color_field': 'specialite', 'no_create': True}"/>
+                                </group>
+                            </page>
+
+                            <!-- ONGLET 3: ANTÉCÉDENTS -->
+                            <page string="📋 Antécédents" name="antecedents">
+                                <!-- Antécédents familiaux -->
+                                <group string="👨‍👩‍👧‍👦 Antécédents familiaux">
+                                    <group>
+                                        <field name="antecedent_diabete_familial"/>
+                                        <field name="age_survenue_diabete"
+                                               invisible="antecedent_diabete_familial == False"/>
+                                        <field name="antecedent_hta_familial"/>
+                                        <field name="age_survenue_hta"
+                                               invisible="antecedent_hta_familial == False"/>
+                                    </group>
+                                    <group>
+                                        <!-- Section consanguinité améliorée -->
+                                        <field name="consanguinite" widget="boolean_toggle"/>
+                                        <field name="degre_consanguinite"
+                                               invisible="consanguinite == False"
+                                               required="consanguinite == True"/>
+                                    </group>
+                                </group>
+
+                                <group string="📝 Autres antécédents familiaux">
+                                    <field name="autres_antecedents_familiaux" nolabel="1"
+                                           placeholder="Autres antécédents familiaux..."/>
+                                </group>
+
+                                <!-- Antécédents personnels -->
+                                <group string="🏥 Antécédents personnels" col="2">
+                                    <group string="Médicaux">
+                                        <field name="antecedents_medicaux" nolabel="1"
+                                               placeholder="Antécédents médicaux..."/>
+                                    </group>
+                                    <group string="Chirurgicaux">
+                                        <field name="antecedents_chirurgicaux" nolabel="1"
+                                               placeholder="Antécédents chirurgicaux..."/>
+                                    </group>
+                                </group>
+
+                                <group string="🤱 Antécédents gynéco-obstétricaux">
+                                    <field name="antecedents_gyneco" nolabel="1"
+                                           placeholder="Antécédents gynéco-obstétricaux..."/>
+                                </group>
+                            </page>
+
+                            <!-- ONGLET 4: ÉVALUATION DES RISQUES -->
+                            <page string="⚠️ Évaluation des Risques" name="risk_assessment">
+                                <group string="📊 Facteurs de risque automatiques" col="2">
+                                    <group string="Facteurs calculés">
+                                        <field name="facteur_risque_age" readonly="1" widget="boolean_toggle"/>
+                                        <field name="facteur_risque_imc" readonly="1" widget="boolean_toggle"/>
+                                        <field name="facteur_risque_antecedents" readonly="1" widget="boolean_toggle"/>
+                                        <field name="facteur_risque_consanguinite" readonly="1" widget="boolean_toggle"/>
+                                    </group>
+                                    <group string="Score et niveau">
+                                        <field name="score_risque" readonly="1"/>
+                                        <field name="niveau_risque_global" readonly="1" widget="badge"
+                                               decoration-success="niveau_risque_global == 'faible'"
+                                               decoration-info="niveau_risque_global == 'moyen'"
+                                               decoration-warning="niveau_risque_global == 'eleve'"
+                                               decoration-danger="niveau_risque_global == 'tres_eleve'"/>
+                                    </group>
+                                </group>
+
+                                <group string="📝 Facteurs de risque supplémentaires">
+                                    <field name="facteurs_risque_supplementaires" nolabel="1"
+                                           placeholder="Autres facteurs de risque identifiés (un par ligne)..."/>
+                                </group>
+
+                                <!-- Alerte spéciale pour consanguinité -->
+                                <div class="alert alert-danger" role="alert"
+                                     invisible="consanguinite == False or degre_consanguinite != '1er'">
+                                    <strong>⚠️ ATTENTION - Consanguinité 1er degré détectée</strong><br/>
+                                    Risque génétique très élevé. Conseil génétique fortement recommandé.
+                                    Surveillance renforcée nécessaire pendant la grossesse.
+                                </div>
+
+                                <div class="alert alert-warning" role="alert"
+                                     invisible="consanguinite == False or degre_consanguinite not in ['2eme', '3eme']">
+                                    <strong>⚡ Consanguinité détectée</strong><br/>
+                                    Risque génétique modéré à élevé. Conseil génétique recommandé.
+                                    Surveillance adaptée pendant la grossesse.
+                                </div>
+                            </page>
+
+                            <!-- ONGLET 5: GROSSESSES -->
+                            <page string="🤰 Grossesses" name="pregnancies">
+                                <field name="grossesse_ids" mode="kanban">
+                                    <kanban>
+                                        <field name="name"/>
+                                        <field name="ddr"/>
+                                        <field name="tag"/>
+                                        <field name="date_prevue_accouchement"/>
+                                        <field name="state"/>
+                                        <field name="type_pathologie_principale"/>
+                                        <field name="niveau_risque"/>
+                                        <field name="medecin_referent_id"/>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div class="oe_kanban_card oe_kanban_global_click">
+                                                    <div class="oe_kanban_content">
+                                                        <div class="o_kanban_record_top">
+                                                            <div class="o_kanban_record_headings">
+                                                                <strong class="o_kanban_record_title">
+                                                                    <field name="name"/>
+                                                                </strong>
+                                                            </div>
+                                                            <div class="o_kanban_record_top_right">
+                                                                <span t-if="record.state.raw_value == 'en_cours'"
+                                                                      class="badge badge-success">En cours</span>
+                                                                <span t-if="record.state.raw_value == 'a_risque'"
+                                                                      class="badge badge-warning">À risque</span>
+                                                                <span t-if="record.state.raw_value == 'terminee'"
+                                                                      class="badge badge-secondary">Terminée</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="o_kanban_record_body">
+                                                            <div>📅 DDR: <field name="ddr"/></div>
+                                                            <div>🍼 DPA: <field name="date_prevue_accouchement"/></div>
+                                                            <div t-if="record.tag.raw_value">
+                                                                ⏱️ TAG: <field name="tag"/> SA
+                                                            </div>
+                                                            <div>🏥 <field name="type_pathologie_principale"/></div>
+                                                            <div t-if="record.medecin_referent_id.raw_value">
+                                                                👨‍⚕️ <field name="medecin_referent_id"/>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+
+                            <!-- ONGLET 6: BILANS PRÉNATAUX -->
+                            <page string="🧪 Bilans Prénataux" name="bilans">
+                                <field name="bilan_prenatal_ids" mode="list">
+                                    <list>
+                                        <field name="date_bilan"/>
+                                        <field name="terme_grossesse"/>
+                                        <field name="type_bilan"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <!-- ONGLET 7: ACCOUCHEMENTS -->
+                            <page string="👶 Accouchements" name="deliveries">
+                                <field name="accouchement_ids" mode="kanban">
+                                    <kanban>
+                                        <field name="name"/>
+                                        <field name="date_accouchement"/>
+                                        <field name="type_accouchement"/>
+                                        <field name="poids_naissance"/>
+                                        <field name="sexe_enfant"/>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div class="oe_kanban_card oe_kanban_global_click">
+                                                    <div class="oe_kanban_content">
+                                                        <div class="o_kanban_record_top">
+                                                            <div class="o_kanban_record_headings">
+                                                                <strong class="o_kanban_record_title">
+                                                                    <field name="name"/>
+                                                                </strong>
+                                                            </div>
+                                                            <div class="o_kanban_record_top_right">
+                                                                <span t-if="record.type_accouchement.raw_value == 'naturel'"
+                                                                      class="badge badge-success">Naturel</span>
+                                                                <span t-if="record.type_accouchement.raw_value == 'cesarienne'"
+                                                                      class="badge badge-info">Césarienne</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="o_kanban_record_body">
+                                                            <div>📅 <field name="date_accouchement"/></div>
+                                                            <div t-if="record.sexe_enfant.raw_value">
+                                                                <span t-if="record.sexe_enfant.raw_value == 'masculin'">👶</span>
+                                                                <span t-if="record.sexe_enfant.raw_value == 'feminin'">👧</span>
+                                                                <field name="sexe_enfant"/>
+                                                            </div>
+                                                            <div t-if="record.poids_naissance.raw_value">
+                                                                ⚖️ <field name="poids_naissance"/> g
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue liste patientes AMÉLIORÉE -->
+        <record id="view_salamet_patiente_tree" model="ir.ui.view">
+            <field name="name">salamet.patiente.tree</field>
+            <field name="model">salamet.patiente</field>
+            <field name="arch" type="xml">
+                <list string="Patientes SALAMET"
+                      decoration-success="est_enceinte == True"
+                      decoration-warning="niveau_risque_global == 'eleve'"
+                      decoration-danger="niveau_risque_global == 'tres_eleve'"
+                      decoration-muted="active == False">
+                    <field name="name"/>
+                    <field name="age"/>
+                    <field name="telephone" widget="phone"/>
+                    <field name="groupe_sanguin"/>
+                    <field name="gestite"/>
+                    <field name="parite"/>
+                    <field name="consanguinite" widget="boolean_toggle"/>
+                    <field name="degre_consanguinite"
+                           invisible="consanguinite == False"/>
+                    <field name="est_enceinte" widget="boolean_toggle"/>
+                    <field name="niveau_risque_global" widget="badge"
+                           decoration-success="niveau_risque_global == 'faible'"
+                           decoration-info="niveau_risque_global == 'moyen'"
+                           decoration-warning="niveau_risque_global == 'eleve'"
+                           decoration-danger="niveau_risque_global == 'tres_eleve'"/>
+                    <field name="score_risque"/>
+                    <field name="medecin_ids" widget="many2many_tags"/>
+                    <field name="active" invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue recherche AMÉLIORÉE -->
+        <record id="view_salamet_patiente_search" model="ir.ui.view">
+            <field name="name">salamet.patiente.search</field>
+            <field name="model">salamet.patiente</field>
+            <field name="arch" type="xml">
+                <search string="Rechercher Patientes">
+                    <field name="name" string="Nom"/>
+                    <field name="telephone" string="Téléphone"/>
+                    <field name="email" string="Email"/>
+                    <field name="groupe_sanguin"/>
+                    <field name="medecin_ids" string="Médecin traitant"/>
+
+                    <!-- Filtres principaux -->
+                    <filter string="🤰 Enceintes" name="pregnant"
+                            domain="[('est_enceinte', '=', True)]"/>
+                    <filter string="⚠️ Haut risque" name="high_risk"
+                            domain="[('niveau_risque_global', 'in', ['eleve', 'tres_eleve'])]"/>
+                    <filter string="✅ Actives" name="active"
+                            domain="[('active', '=', True)]"/>
+
+                    <separator/>
+
+                    <!-- Filtres médicaux -->
+                    <filter string="🩸 Groupe O-" name="group_o_neg"
+                            domain="[('groupe_sanguin', '=', 'O-')]"/>
+                    <filter string="🧬 Consanguinité" name="consanguinite"
+                            domain="[('consanguinite', '=', True)]"/>
+                    <filter string="🧬 Consanguinité 1er degré" name="consanguinite_1er"
+                            domain="[('consanguinite', '=', True), ('degre_consanguinite', '=', '1er')]"/>
+                    <filter string="🧬 Consanguinité 2ème/3ème degré" name="consanguinite_autres"
+                            domain="[('consanguinite', '=', True), ('degre_consanguinite', 'in', ['2eme', '3eme'])]"/>
+                    <filter string="🍯 Diabète familial" name="diabete_familial"
+                            domain="[('antecedent_diabete_familial', '=', True)]"/>
+                    <filter string="💓 HTA familiale" name="hta_familiale"
+                            domain="[('antecedent_hta_familial', '=', True)]"/>
+
+                    <separator/>
+
+                    <!-- Filtres par score de risque -->
+                    <filter string="Score risque ≥ 3" name="score_high"
+                            domain="[('score_risque', '>=', 3)]"/>
+                    <filter string="Score risque ≥ 5" name="score_very_high"
+                            domain="[('score_risque', '>=', 5)]"/>
+
+                    <group expand="0" string="Grouper par">
+                        <filter string="Niveau de risque" name="group_by_risk"
+                                context="{'group_by': 'niveau_risque_global'}"/>
+                        <filter string="Consanguinité" name="group_by_consanguinite"
+                                context="{'group_by': 'consanguinite'}"/>
+                        <filter string="Degré de consanguinité" name="group_by_degre_consanguinite"
+                                context="{'group_by': 'degre_consanguinite'}"/>
+                        <filter string="Groupe sanguin" name="group_by_blood"
+                                context="{'group_by': 'groupe_sanguin'}"/>
+                        <filter string="Médecin traitant" name="group_by_medecin"
+                                context="{'group_by': 'medecin_ids'}"/>
+                        <filter string="État grossesse" name="group_by_pregnant"
+                                context="{'group_by': 'est_enceinte'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vue kanban pour patientes -->
+        <record id="view_salamet_patiente_kanban" model="ir.ui.view">
+            <field name="name">salamet.patiente.kanban</field>
+            <field name="model">salamet.patiente</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="age"/>
+                    <field name="est_enceinte"/>
+                    <field name="niveau_risque_global"/>
+                    <field name="consanguinite"/>
+                    <field name="degre_consanguinite"/>
+                    <field name="score_risque"/>
+                    <field name="telephone"/>
+                    <field name="groupe_sanguin"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="name"/>
+                                            </strong>
+                                        </div>
+                                        <div class="o_kanban_record_top_right">
+                                            <span t-if="record.est_enceinte.raw_value" class="badge badge-success">
+                                                🤰 Enceinte
+                                            </span>
+                                            <span t-if="record.niveau_risque_global.raw_value == 'tres_eleve'"
+                                                  class="badge badge-danger">
+                                                Très haut risque
+                                            </span>
+                                            <span t-if="record.niveau_risque_global.raw_value == 'eleve'"
+                                                  class="badge badge-warning">
+                                                Haut risque
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <div>👤 <field name="age"/> ans</div>
+                                        <div t-if="record.telephone.raw_value">
+                                            📞 <field name="telephone"/>
+                                        </div>
+                                        <div t-if="record.groupe_sanguin.raw_value">
+                                            🩸 <field name="groupe_sanguin"/>
+                                        </div>
+                                        <div t-if="record.consanguinite.raw_value">
+                                            🧬 Consanguinité <field name="degre_consanguinite"/>
+                                        </div>
+                                        <div>📊 Score risque: <field name="score_risque"/></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Action principale pour les patientes -->
+        <record id="action_salamet_patiente" model="ir.actions.act_window">
+            <field name="name">Patientes SALAMET</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle patiente
+                </p>
+                <p>
+                    Enregistrez les informations des patientes pour le suivi de grossesse SALAMET.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action pour nouvelle patiente -->
+        <record id="action_salamet_nouvelle_patiente" model="ir.actions.act_window">
+            <field name="name">Nouvelle Patiente</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">form</field>
+            <field name="target">current</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Ajouter une nouvelle patiente
+                </p>
+                <p>
+                    Enregistrez une nouvelle patiente dans le système.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action pour patientes à risque -->
+        <record id="action_salamet_patiente_risque" model="ir.actions.act_window">
+            <field name="name">Patientes à Risque</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="domain">[('niveau_risque_global', 'in', ['eleve', 'tres_eleve'])]</field>
+            <field name="context">{'search_default_high_risk': 1}</field>
+        </record>
+
+        <!-- Action pour patientes avec consanguinité -->
+        <record id="action_salamet_patiente_consanguinite" model="ir.actions.act_window">
+            <field name="name">Patientes avec Consanguinité</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="domain">[('consanguinite', '=', True)]</field>
+            <field name="context">{'search_default_consanguinite': 1}</field>
+        </record>
+
+    </data>
+</odoo>
+

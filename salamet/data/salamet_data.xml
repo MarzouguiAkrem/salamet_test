@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- =================== SEQUENCES =================== -->
+
+        <!-- Sequence pour les grossesses -->
+        <record id="seq_salamet_grossesse" model="ir.sequence">
+            <field name="name">Grossesse SALAMET</field>
+            <field name="code">salamet.grossesse</field>
+            <field name="prefix">GRS</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence pour les accouchements -->
+        <record id="seq_salamet_accouchement" model="ir.sequence">
+            <field name="name">Accouchement SALAMET</field>
+            <field name="code">salamet.accouchement</field>
+            <field name="prefix">ACC</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence pour les bilans prenataux -->
+        <record id="seq_salamet_bilan_prenatal" model="ir.sequence">
+            <field name="name">Bilan Prenatal SALAMET</field>
+            <field name="code">salamet.bilan.prenatal</field>
+            <field name="prefix">BPN</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence pour les consultations -->
+        <record id="seq_salamet_consultation" model="ir.sequence">
+            <field name="name">Consultation SALAMET</field>
+            <field name="code">salamet.consultation</field>
+            <field name="prefix">CONS</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence pour les patientes -->
+        <record id="seq_salamet_patiente" model="ir.sequence">
+            <field name="name">Patiente SALAMET</field>
+            <field name="code">salamet.patiente</field>
+            <field name="prefix">PAT</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence pour les médecins -->
+        <record id="seq_salamet_medecin" model="ir.sequence">
+            <field name="name">Médecin SALAMET</field>
+            <field name="code">salamet.medecin</field>
+            <field name="prefix">MED</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- =================== FACTEURS DE RISQUE PREDEFINIS =================== -->
+
+        <record id="facteur_risque_age_jeune" model="salamet.facteur.risque">
+            <field name="name">Âge maternel moins de 18 ans</field>
+            <field name="description">Grossesse chez une adolescente</field>
+            <field name="niveau_risque">2</field>
+            <field name="categorie">medical</field>
+        </record>
+
+        <record id="facteur_risque_age_avance" model="salamet.facteur.risque">
+            <field name="name">Âge maternel plus de 35 ans</field>
+            <field name="description">Grossesse tardive avec risques chromosomiques</field>
+            <field name="niveau_risque">2</field>
+            <field name="categorie">medical</field>
+        </record>
+
+        <record id="facteur_risque_diabete" model="salamet.facteur.risque">
+            <field name="name">Antécédent familial de diabète</field>
+            <field name="description">Risque de diabète gestationnel</field>
+            <field name="niveau_risque">2</field>
+            <field name="categorie">familial</field>
+        </record>
+
+        <record id="facteur_risque_hta" model="salamet.facteur.risque">
+            <field name="name">Antécédent familial d'HTA</field>
+            <field name="description">Risque d'hypertension gravidique</field>
+            <field name="niveau_risque">2</field>
+            <field name="categorie">familial</field>
+        </record>
+
+        <record id="facteur_risque_consanguinite_1er" model="salamet.facteur.risque">
+            <field name="name">Consanguinité 1er degré</field>
+            <field name="description">Risque très élevé de malformations génétiques</field>
+            <field name="niveau_risque">4</field>
+            <field name="categorie">genetique</field>
+        </record>
+
+        <record id="facteur_risque_consanguinite_2eme" model="salamet.facteur.risque">
+            <field name="name">Consanguinité 2ème degré</field>
+            <field name="description">Risque élevé de malformations génétiques</field>
+            <field name="niveau_risque">3</field>
+            <field name="categorie">genetique</field>
+        </record>
+
+        <record id="facteur_risque_consanguinite_3eme" model="salamet.facteur.risque">
+            <field name="name">Consanguinité 3ème degré</field>
+            <field name="description">Risque modéré de malformations génétiques</field>
+            <field name="niveau_risque">2</field>
+            <field name="categorie">genetique</field>
+        </record>
+
+        <record id="facteur_risque_obesite" model="salamet.facteur.risque">
+            <field name="name">Obésité (IMC > 30)</field>
+            <field name="description">Risque de complications obstétricales</field>
+            <field name="niveau_risque">2</field>
+            <field name="categorie">medical</field>
+        </record>
+
+        <record id="facteur_risque_fausses_couches" model="salamet.facteur.risque">
+            <field name="name">Fausses couches répétées</field>
+            <field name="description">Antécédent de pertes fœtales répétées</field>
+            <field name="niveau_risque">3</field>
+            <field name="categorie">obstetrical</field>
+        </record>
+
+        <!-- =================== DONNEES DE DEMONSTRATION - MEDECINS =================== -->
+
+        <!-- Médecins seniors -->
+        <record id="medecin_senior_1" model="salamet.medecin">
+            <field name="nom_complet">Dr. Marie MARTIN</field>
+            <field name="statut">senior</field>
+            <field name="specialite">Gynécologie-Obstétrique</field>
+            <field name="phone">+33 1 23 45 67 89</field>
+            <field name="email">marie.martin@hopital.fr</field>
+            <field name="faculte_origine">Faculté de Médecine Paris</field>
+            <field name="lieu_exercice">CHU Central</field>
+            <field name="street">123 Avenue des Médecins</field>
+            <field name="city">Paris</field>
+            <field name="zip">75001</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="medecin_senior_2" model="salamet.medecin">
+            <field name="nom_complet">Dr. Sophie BERNARD</field>
+            <field name="statut">senior</field>
+            <field name="specialite">Gynécologie-Obstétrique</field>
+            <field name="phone">+33 1 23 45 67 88</field>
+            <field name="email">sophie.bernard@hopital.fr</field>
+            <field name="faculte_origine">Faculté de Médecine Marseille</field>
+            <field name="lieu_exercice">CHU Central</field>
+            <field name="street">456 Rue de la Santé</field>
+            <field name="city">Marseille</field>
+            <field name="zip">13001</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Médecins résidents -->
+        <record id="medecin_resident_1" model="salamet.medecin">
+            <field name="nom_complet">Dr. Pierre DURAND</field>
+            <field name="statut">resident</field>
+            <field name="specialite">Gynécologie-Obstétrique</field>
+            <field name="phone">+33 1 23 45 67 90</field>
+            <field name="email">pierre.durand@hopital.fr</field>
+            <field name="faculte_origine">Faculté de Médecine Lyon</field>
+            <field name="lieu_exercice">CHU Central</field>
+            <field name="street">789 Boulevard des Résidents</field>
+            <field name="city">Lyon</field>
+            <field name="zip">69001</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="medecin_resident_2" model="salamet.medecin">
+            <field name="nom_complet">Dr. Julie MOREAU</field>
+            <field name="statut">resident</field>
+            <field name="specialite">Gynécologie-Obstétrique</field>
+            <field name="phone">+33 1 23 45 67 91</field>
+            <field name="email">julie.moreau@hopital.fr</field>
+            <field name="faculte_origine">Faculté de Médecine Bordeaux</field>
+            <field name="lieu_exercice">CHU Central</field>
+            <field name="street">321 Allée des Internes</field>
+            <field name="city">Bordeaux</field>
+            <field name="zip">33000</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Médecin chef de service -->
+        <record id="medecin_chef_1" model="salamet.medecin">
+            <field name="nom_complet">Pr. Jean-Claude MARTIN</field>
+            <field name="statut">senior</field>
+            <field name="specialite">Chef de Service Gynécologie-Obstétrique</field>
+            <field name="phone">+33 1 23 45 67 85</field>
+            <field name="email">jc.martin@hopital.fr</field>
+            <field name="faculte_origine">Faculté de Médecine Paris Descartes</field>
+            <field name="lieu_exercice">CHU Central - Service Gynéco</field>
+            <field name="street">1 Place de l'Hôpital</field>
+            <field name="city">Paris</field>
+            <field name="zip">75014</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- =================== DONNEES DE DEMONSTRATION - PATIENTES =================== -->
+
+        <!-- Patiente 1 : Jeune primipare -->
+        <record id="patiente_demo_1" model="salamet.patiente">
+            <field name="name">Fatima ALAMI</field>
+            <field name="date_naissance">1995-05-15</field>
+            <field name="profession">Enseignante</field>
+            <field name="telephone">+212 6 12 34 56 78</field>
+            <field name="email">fatima.alami@email.com</field>
+            <field name="adresse">123 Rue Mohammed V, Hay Riad, Casablanca 20000</field>
+
+            <!-- Relation avec les médecins -->
+            <field name="medecin_ids" eval="[(6, 0, [ref('medecin_senior_1'), ref('medecin_resident_1')])]"/>
+
+            <!-- Informations conjugales -->
+            <field name="nom_mari">Ahmed ALAMI</field>
+            <field name="age_mari">32</field>
+            <field name="profession_mari">Ingénieur</field>
+            <field name="telephone_mari">+212 6 87 65 43 21</field>
+            <field name="email_mari">ahmed.alami@email.com</field>
+
+            <!-- Informations médicales -->
+            <field name="groupe_sanguin">O+</field>
+            <field name="poids">65.0</field>
+            <field name="taille">165.0</field>
+
+            <!-- Antécédents familiaux -->
+            <field name="antecedent_diabete_familial">False</field>
+            <field name="antecedent_hta_familial">True</field>
+            <field name="age_survenue_hta">45</field>
+            <field name="consanguinite">False</field>
+
+            <!-- GPA -->
+            <field name="gestite">1</field>
+            <field name="parite">0</field>
+            <field name="avortements">0</field>
+            <field name="gpa_details">G1P0A0 - Première grossesse</field>
+
+            <!-- Antécédents -->
+            <field name="antecedents_medicaux">Aucun antécédent médical particulier</field>
+            <field name="antecedents_chirurgicaux">Appendicectomie en 2018</field>
+            <field name="antecedents_gyneco">Cycles réguliers, pas de pathologie gynécologique</field>
+
+            <field name="active">True</field>
+        </record>
+
+        <!-- Patiente 2 : Multipare avec antécédents -->
+        <record id="patiente_demo_2" model="salamet.patiente">
+            <field name="name">Aicha BENALI</field>
+            <field name="date_naissance">1985-08-22</field>
+            <field name="profession">Infirmière</field>
+            <field name="telephone">+212 6 87 65 43 22</field>
+            <field name="email">aicha.benali@email.com</field>
+            <field name="adresse">456 Avenue Hassan II, Agdal, Rabat 10000</field>
+
+            <!-- Relation avec les médecins -->
+            <field name="medecin_ids" eval="[(6, 0, [ref('medecin_senior_2'), ref('medecin_resident_2')])]"/>
+
+            <!-- Informations conjugales -->
+            <field name="nom_mari">Youssef BENALI</field>
+            <field name="age_mari">42</field>
+            <field name="profession_mari">Médecin</field>
+            <field name="telephone_mari">+212 6 11 22 33 44</field>
+            <field name="email_mari">youssef.benali@email.com</field>
+
+            <!-- Informations médicales -->
+            <field name="groupe_sanguin">A+</field>
+            <field name="poids">72.0</field>
+            <field name="taille">160.0</field>
+
+            <!-- Antécédents familiaux -->
+            <field name="antecedent_diabete_familial">True</field>
+            <field name="age_survenue_diabete">50</field>
+            <field name="antecedent_hta_familial">False</field>
+            <field name="consanguinite">False</field>
+
+            <!-- GPA -->
+            <field name="gestite">3</field>
+            <field name="parite">2</field>
+            <field name="avortements">1</field>
+            <field name="gpa_details">G3P2A1 - 2 accouchements normaux (2015, 2018), 1 fausse couche précoce (2020)</field>
+
+            <!-- Antécédents -->
+            <field name="antecedents_medicaux">Diabète gestationnel lors de la 2ème grossesse</field>
+            <field name="antecedents_chirurgicaux">Césarienne en 2018</field>
+            <field name="antecedents_gyneco">Cycles réguliers, endométriose légère</field>
+
+            <field name="active">True</field>
+        </record>
+
+        <!-- Patiente 3 : Grossesse à risque avec consanguinité -->
+        <record id="patiente_demo_3" model="salamet.patiente">
+            <field name="name">Khadija BENNANI</field>
+            <field name="date_naissance">1980-12-03</field>
+            <field name="profession">Comptable</field>
+            <field name="telephone">+212 6 98 76 54 32</field>
+            <field name="email">khadija.bennani@email.com</field>
+            <field name="adresse">789 Rue Al Massira, Ville Nouvelle, Fès 30000</field>
+
+            <!-- Relation avec les médecins -->
+            <field name="medecin_ids" eval="[(6, 0, [ref('medecin_chef_1'), ref('medecin_senior_1')])]"/>
+
+            <!-- Informations conjugales -->
+            <field name="nom_mari">Omar BENNANI</field>
+            <field name="age_mari">48</field>
+            <field name="profession_mari">Pharmacien</field>
+            <field name="telephone_mari">+212 6 55 44 33 22</field>
+            <field name="email_mari">omar.bennani@email.com</field>
+
+            <!-- Informations médicales -->
+            <field name="groupe_sanguin">B+</field>
+            <field name="poids">85.0</field>
+            <field name="taille">158.0</field>
+
+            <!-- Antécédents familiaux -->
+            <field name="antecedent_diabete_familial">True</field>
+            <field name="age_survenue_diabete">40</field>
+            <field name="antecedent_hta_familial">True</field>
+            <field name="age_survenue_hta">35</field>
+            <field name="consanguinite">True</field>
+            <field name="degre_consanguinite">2eme</field>
+            <field name="autres_antecedents_familiaux">Mère diabétique, père hypertendu, cousins germains</field>
+
+            <!-- GPA -->
+            <field name="gestite">4</field>
+            <field name="parite">2</field>
+            <field name="avortements">2</field>
+            <field name="gpa_details">G4P2A2 - 2 accouchements (2010, 2013), 2 fausses couches tardives (2016, 2019)</field>
+
+            <!-- Antécédents -->
+            <field name="antecedents_medicaux">HTA chronique sous traitement, surpoids</field>
+            <field name="antecedents_chirurgicaux">Cholécystectomie en 2019</field>
+            <field name="antecedents_gyneco">Fausses couches répétées, fibrome utérin</field>
+
+            <!-- Facteurs de risque supplémentaires -->
+            <field name="facteurs_risque_supplementaires">Âge maternel > 35 ans
+Surpoids (IMC > 30)
+HTA chronique
+Antécédents de fausses couches répétées
+Consanguinité parentale (2ème degré)</field>
+
+            <field name="active">True</field>
+        </record>
+
+        <!-- Patiente 4 : Jeune patiente -->
+        <record id="patiente_demo_4" model="salamet.patiente">
+            <field name="name">Salma IDRISSI</field>
+            <field name="date_naissance">2003-03-10</field>
+            <field name="profession">Étudiante</field>
+            <field name="telephone">+212 6 77 88 99 00</field>
+            <field name="email">salma.idrissi@email.com</field>
+            <field name="adresse">321 Boulevard Zerktouni, Guéliz, Marrakech 40000</field>
+
+            <!-- Relation avec les médecins -->
+            <field name="medecin_ids" eval="[(6, 0, [ref('medecin_senior_2'), ref('medecin_resident_1')])]"/>
+
+            <!-- Informations conjugales -->
+            <field name="nom_mari">Amine IDRISSI</field>
+            <field name="age_mari">23</field>
+            <field name="profession_mari">Étudiant</field>
+            <field name="telephone_mari">+212 6 66 77 88 99</field>
+
+            <!-- Informations médicales -->
+            <field name="groupe_sanguin">AB+</field>
+            <field name="poids">55.0</field>
+            <field name="taille">162.0</field>
+
+            <!-- Antécédents familiaux -->
+            <field name="antecedent_diabete_familial">False</field>
+            <field name="antecedent_hta_familial">False</field>
+            <field name="consanguinite">False</field>
+
+            <!-- GPA -->
+            <field name="gestite">1</field>
+            <field name="parite">0</field>
+            <field name="avortements">0</field>
+            <field name="gpa_details">G1P0A0 - Première grossesse, jeune âge</field>
+
+            <!-- Antécédents -->
+            <field name="antecedents_medicaux">Aucun</field>
+            <field name="antecedents_chirurgicaux">Aucun</field>
+            <field name="antecedents_gyneco">Ménarche à 13 ans, cycles irréguliers</field>
+
+            <field name="active">True</field>
+        </record>
+
+        <!-- Patiente 5 : Cas de consanguinité 1er degré -->
+        <record id="patiente_demo_5" model="salamet.patiente">
+            <field name="name">Zahra TAZI</field>
+            <field name="date_naissance">1992-07-18</field>
+            <field name="profession">Sans profession</field>
+            <field name="telephone">+212 6 33 44 55 66</field>
+            <field name="email">zahra.tazi@email.com</field>
+            <field name="adresse">654 Rue des Oliviers, Médina, Tétouan 93000</field>
+
+            <!-- Relation avec les médecins -->
+            <field name="medecin_ids" eval="[(6, 0, [ref('medecin_chef_1'), ref('medecin_senior_2')])]"/>
+
+            <!-- Informations conjugales -->
+            <field name="nom_mari">Hassan TAZI</field>
+            <field name="age_mari">35</field>
+            <field name="profession_mari">Commerçant</field>
+            <field name="telephone_mari">+212 6 22 33 44 55</field>
+
+            <!-- Informations médicales -->
+            <field name="groupe_sanguin">O-</field>
+            <field name="poids">68.0</field>
+            <field name="taille">155.0</field>
+
+            <!-- Antécédents familiaux -->
+            <field name="antecedent_diabete_familial">False</field>
+            <field name="antecedent_hta_familial">False</field>
+            <field name="consanguinite">True</field>
+            <field name="degre_consanguinite">1er</field>
+            <field name="autres_antecedents_familiaux">Mariage entre cousins germains (1er degré)</field>
+
+            <!-- GPA -->
+            <field name="gestite">2</field>
+            <field name="parite">1</field>
+            <field name="avortements">1</field>
+            <field name="gpa_details">G2P1A1 - 1 accouchement (2020), 1 fausse couche (2022)</field>
+
+            <!-- Antécédents -->
+            <field name="antecedents_medicaux">Aucun antécédent particulier</field>
+            <field name="antecedents_chirurgicaux">Aucun</field>
+            <field name="antecedents_gyneco">Cycles réguliers</field>
+
+            <!-- Facteurs de risque supplémentaires -->
+            <field name="facteurs_risque_supplementaires">Consanguinité 1er degré - Risque très élevé de malformations génétiques
+Surveillance renforcée nécessaire</field>
+
+            <field name="active">True</field>
+        </record>
+
+    </data>
+</odoo>

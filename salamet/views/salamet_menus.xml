@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+<!-- =================== MENU PRINCIPAL =================== -->
+<menuitem id="menu_salamet_root"
+name="🏥 SALAMET"
+sequence="1"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== GESTION DES PATIENTES (MAINTENANT EN PREMIER) =================== -->
+<menuitem id="menu_salamet_patientes"
+name="👥 Patientes"
+parent="menu_salamet_root"
+sequence="5"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_nouvelle_patiente"
+name="➕ Nouvelle patiente"
+parent="menu_salamet_patientes"
+action="action_salamet_nouvelle_patiente"
+sequence="5"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_patientes_all"
+name="📝 Toutes les patientes"
+parent="menu_salamet_patientes"
+action="action_salamet_patiente"
+sequence="6"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== TABLEAU DE BORD =================== -->
+<menuitem id="menu_salamet_dashboard"
+name="📊 Tableau de bord"
+parent="menu_salamet_root"
+sequence="10"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== SUIVI DES GROSSESSES =================== -->
+<menuitem id="menu_salamet_suivi"
+name="🤱 Suivi des grossesses"
+parent="menu_salamet_root"
+sequence="15"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_nouvelle_grossesse"
+name="➕ Nouvelle grossesse"
+parent="menu_salamet_suivi"
+action="action_salamet_nouvelle_grossesse"
+sequence="15"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_grossesses"
+name="📋 Grossesses"
+parent="menu_salamet_suivi"
+action="action_salamet_grossesse"
+sequence="16"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_grossesses_actives"
+name="🟢 Grossesses actives"
+parent="menu_salamet_suivi"
+action="action_salamet_grossesse_active"
+sequence="17"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_grossesses_risque"
+name="🔴 Grossesses à risque"
+parent="menu_salamet_suivi"
+action="action_salamet_grossesse_risque"
+sequence="18"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== BILANS ET EXAMENS =================== -->
+<menuitem id="menu_salamet_examens"
+name="🔬 Bilans et Examens"
+parent="menu_salamet_root"
+sequence="20"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_bilan_prenatal"
+name="📋 Bilans Prénataux"
+parent="menu_salamet_examens"
+action="action_salamet_bilan_prenatal"
+sequence="20"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_echographie"
+name="🖼️ Échographies"
+parent="menu_salamet_examens"
+action="action_salamet_echographie"
+sequence="21"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_bilan_alertes"
+name="🚨 Alertes Bilans"
+parent="menu_salamet_examens"
+action="action_salamet_bilan_prenatal_alertes"
+sequence="22"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== CONSULTATIONS =================== -->
+<menuitem id="menu_salamet_consultations"
+name="🩺 Consultations"
+parent="menu_salamet_root"
+sequence="25"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_nouvelle_consultation"
+name="➕ Nouvelle consultation"
+parent="menu_salamet_consultations"
+action="action_salamet_nouvelle_consultation"
+sequence="25"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_consultations_all"
+name="📅 Toutes les consultations"
+parent="menu_salamet_consultations"
+action="action_salamet_consultation"
+sequence="26"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_consultations_aujourd_hui"
+name="📅 Aujourd'hui"
+parent="menu_salamet_consultations"
+action="action_salamet_consultation_today"
+sequence="27"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_consultations_urgences"
+name="🚨 Urgences"
+parent="menu_salamet_consultations"
+action="action_salamet_consultation_urgences"
+sequence="28"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== ACCOUCHEMENTS =================== -->
+<menuitem id="menu_salamet_accouchements"
+name="👶 Accouchements"
+parent="menu_salamet_root"
+sequence="30"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_nouvel_accouchement"
+name="➕ Nouvel accouchement"
+parent="menu_salamet_accouchements"
+action="action_salamet_nouvel_accouchement"
+sequence="30"
+groups="salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_accouchements_all"
+name="📋 Tous les accouchements"
+parent="menu_salamet_accouchements"
+action="action_salamet_accouchement"
+sequence="31"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_accouchements_calendrier"
+name="📅 Calendrier"
+parent="menu_salamet_accouchements"
+action="action_salamet_accouchement_calendrier"
+sequence="32"
+groups="salamet.group_salamet_readonly,salamet.group_salamet_medecin_resident,salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== ÉQUIPE MÉDICALE =================== -->
+<menuitem id="menu_salamet_equipe"
+name="👨‍⚕️ Équipe médicale"
+parent="menu_salamet_root"
+sequence="35"
+groups="salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_nouveau_medecin"
+name="➕ Nouveau médecin"
+parent="menu_salamet_equipe"
+action="action_salamet_nouveau_medecin"
+sequence="35"
+groups="salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_medecins"
+name="👩‍⚕️ Médecins"
+parent="menu_salamet_equipe"
+action="action_salamet_medecin"
+sequence="36"
+groups="salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== RAPPORTS ET STATISTIQUES =================== -->
+<menuitem id="menu_salamet_rapports"
+name="📊 Rapports"
+parent="menu_salamet_root"
+sequence="40"
+groups="salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_statistiques"
+name="📈 Statistiques"
+parent="menu_salamet_rapports"
+sequence="40"
+groups="salamet.group_salamet_medecin_senior,salamet.group_salamet_admin"/>
+
+<!-- =================== CONFIGURATION =================== -->
+<!--
+<menuitem id="menu_salamet_configuration"
+name="⚙️ Configuration"
+parent="menu_salamet_root"
+sequence="90"
+groups="salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_parametres"
+name="🔧 Paramètres"
+parent="menu_salamet_configuration"
+sequence="90"
+groups="salamet.group_salamet_admin"/>
+
+<menuitem id="menu_salamet_utilisateurs"
+name="👤 Utilisateurs"
+parent="menu_salamet_configuration"
+action="base.action_res_users"
+sequence="91"
+groups="salamet.group_salamet_admin"/>
+-->
+
+</data>
+</odoo>

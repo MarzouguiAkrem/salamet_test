@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ========== ACTIONS PRINCIPALES (MANQUANTES) ========== -->
+
+        <!-- Action Patientes (PRINCIPALE) -->
+        <record id="action_salamet_patiente" model="ir.actions.act_window">
+            <field name="name">Patientes</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune patiente trouvée
+                </p>
+                <p>
+                    Créez votre première patiente.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action Grossesses (PRINCIPALE) -->
+        <record id="action_salamet_grossesse" model="ir.actions.act_window">
+            <field name="name">Grossesses</field>
+            <field name="res_model">salamet.grossesse</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune grossesse trouvée
+                </p>
+                <p>
+                    Créez votre première grossesse.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action Médecins (PRINCIPALE) -->
+        <record id="action_salamet_medecin" model="ir.actions.act_window">
+            <field name="name">Médecins</field>
+            <field name="res_model">salamet.medecin</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucun médecin trouvé
+                </p>
+                <p>
+                    Créez votre premier médecin.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action Consultations (PRINCIPALE) -->
+        <record id="action_salamet_consultation" model="ir.actions.act_window">
+            <field name="name">Consultations</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">list,form,calendar</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune consultation trouvée
+                </p>
+                <p>
+                    Créez votre première consultation.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action Bilans prénataux (PRINCIPALE) -->
+        <record id="action_salamet_bilan_prenatal" model="ir.actions.act_window">
+            <field name="name">Bilans prénataux</field>
+            <field name="res_model">salamet.bilan.prenatal</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucun bilan prénatal trouvé
+                </p>
+                <p>
+                    Créez votre premier bilan prénatal.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action Accouchements (PRINCIPALE) -->
+        <record id="action_salamet_accouchement" model="ir.actions.act_window">
+            <field name="name">Accouchements</field>
+            <field name="res_model">salamet.accouchement</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucun accouchement trouvé
+                </p>
+                <p>
+                    Créez votre premier accouchement.
+                </p>
+            </field>
+        </record>
+
+        <!-- ========== ACTIONS MANQUANTES RÉFÉRENCÉES DANS LES MENUS ========== -->
+
+        <!-- CORRECTION : Action grossesses actives (sans 's') -->
+        <record id="action_salamet_grossesse_active" model="ir.actions.act_window">
+            <field name="name">Grossesses actives</field>
+            <field name="res_model">salamet.grossesse</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="domain">[('state', '=', 'en_cours')]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune grossesse active trouvée
+                </p>
+                <p>
+                    Les grossesses actives sont celles en cours de suivi.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action nouvelles patientes (sans 's') -->
+        <record id="action_salamet_patiente_nouvelle" model="ir.actions.act_window">
+            <field name="name">Nouvelles patientes</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('create_date', '>=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune nouvelle patiente
+                </p>
+                <p>
+                    Les patientes créées récemment apparaîtront ici.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action alertes bilans -->
+        <record id="action_salamet_bilan_prenatal_alertes" model="ir.actions.act_window">
+            <field name="name">Alertes Bilans</field>
+            <field name="res_model">salamet.bilan.prenatal</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('alerte', '=', True)]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune alerte
+                </p>
+                <p>
+                    Les bilans nécessitant une attention apparaîtront ici.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action échographies -->
+        <record id="action_salamet_echographie" model="ir.actions.act_window">
+            <field name="name">Échographies</field>
+            <field name="res_model">salamet.echographie</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle échographie
+                </p>
+                <p>
+                    Gérez les échographies de vos patientes.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action consultations aujourd'hui -->
+        <record id="action_salamet_consultation_today" model="ir.actions.act_window">
+            <field name="name">Consultations Aujourd'hui</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">list,form,calendar</field>
+            <field name="domain">[('date_consultation', '=', context_today())]</field>
+            <field name="context">{'default_date_consultation': context_today()}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune consultation aujourd'hui
+                </p>
+                <p>
+                    Les consultations du jour apparaîtront ici.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action accouchements prévus -->
+        <record id="action_salamet_accouchement_prevu" model="ir.actions.act_window">
+            <field name="name">Accouchements Prévus</field>
+            <field name="res_model">salamet.accouchement</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('date_prevue', '>=', context_today()), ('date_prevue', '&lt;= ', (context_today() + datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucun accouchement prévu
+                </p>
+                <p>
+                    Les accouchements prévus dans les 30 prochains jours apparaîtront ici.
+                </p>
+            </field>
+        </record>
+
+        <!-- ========== VOS ACTIONS EXISTANTES ========== -->
+
+        <!-- Action Notifications (PRINCIPALE) -->
+        <record id="action_salamet_notification" model="ir.actions.act_window">
+            <field name="name">Notifications</field>
+            <field name="res_model">salamet.notification</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune notification trouvée
+                </p>
+                <p>
+                    Créez votre première notification.
+                </p>
+            </field>
+        </record>
+
+        <!-- ========== ACTIONS GROSSESSES ========== -->
+        <record id="action_salamet_grossesse_actives" model="ir.actions.act_window">
+            <field name="name">Grossesses actives</field>
+            <field name="res_model">salamet.grossesse</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="domain">[('state', '=', 'en_cours')]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Aucune grossesse active trouvée
+                </p>
+                <p>
+                    Les grossesses actives sont celles en cours de suivi.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_salamet_grossesse_risque" model="ir.actions.act_window">
+            <field name="name">Grossesses à risque</field>
+            <field name="res_model">salamet.grossesse</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="domain">[('state', '=', 'a_risque')]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS CONSULTATIONS ========== -->
+        <record id="action_salamet_consultation_mes" model="ir.actions.act_window">
+            <field name="name">Mes consultations</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">list,form,calendar</field>
+            <field name="domain">[('medecin_id.user_id', '=', uid)]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <record id="action_salamet_consultation_aujourd_hui" model="ir.actions.act_window">
+            <field name="name">Consultations du jour</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">list,form,calendar</field>
+            <field name="domain">[('date_consultation', '=', context_today().strftime('%Y-%m-%d'))]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS BILANS ========== -->
+        <record id="action_salamet_bilan_attente" model="ir.actions.act_window">
+            <field name="name">Bilans en attente</field>
+            <field name="res_model">salamet.bilan.prenatal</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('state', 'in', ['prescrit', 'en_cours'])]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS NOTIFICATIONS ========== -->
+        <record id="action_salamet_notification_mes" model="ir.actions.act_window">
+            <field name="name">Mes notifications</field>
+            <field name="res_model">salamet.notification</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="domain">[('medecin_responsable_id.user_id', '=', uid)]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <record id="action_salamet_notification_urgentes" model="ir.actions.act_window">
+            <field name="name">Notifications urgentes</field>
+            <field name="res_model">salamet.notification</field>
+            <field name="view_mode">list,form,kanban</field>
+            <field name="domain">[('priorite', 'in', ['haute', 'critique']), ('state', '!=', 'traitee')]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <record id="action_salamet_notification_retard" model="ir.actions.act_window">
+            <field name="name">Notifications en retard</field>
+            <field name="res_model">salamet.notification</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('date_prevue', '&lt;', datetime.datetime.now()), ('state', '!=', 'traitee')]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS PATIENTES ========== -->
+        <record id="action_salamet_patiente_nouvelles" model="ir.actions.act_window">
+            <field name="name">Nouvelles patientes</field>
+            <field name="res_model">salamet.patiente</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('create_date', '>=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS ACCOUCHEMENTS ========== -->
+        <record id="action_salamet_accouchement_prevus" model="ir.actions.act_window">
+            <field name="name">Accouchements prévus</field>
+            <field name="res_model">salamet.accouchement</field>
+            <field name="view_mode">list,form,calendar</field>
+            <field name="domain">[('date_prevue', '>=', context_today().strftime('%Y-%m-%d')), ('state', '=', 'prevu')]</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS ÉQUIPE MÉDICALE ========== -->
+        <record id="action_salamet_equipe_medicale" model="ir.actions.act_window">
+            <field name="name">Équipes médicales</field>
+            <field name="res_model">salamet.equipe.medicale</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ========== ACTIONS CONFIGURATION ========== -->
+        <record id="action_salamet_config_parametres" model="ir.actions.act_window">
+            <field name="name">Paramètres système</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module': 'salamet'}</field>
+        </record>
+
+        <!-- ========== ACTIONS WIZARDS ========== -->
+        <record id="action_salamet_notification_wizard" model="ir.actions.act_window">
+            <field name="name">Créer des notifications</field>
+            <field name="res_model">salamet.notification.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_salamet_bilan_interpretation_wizard" model="ir.actions.act_window">
+            <field name="name">Interpréter le bilan</field>
+            <field name="res_model">salamet.bilan.interpretation.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+    </data>
+</odoo>

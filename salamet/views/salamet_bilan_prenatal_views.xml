@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =================== VUES BILAN PRÉNATAL =================== -->
+
+    <!-- Vue Liste des Bilans Prénataux -->
+    <record id="view_salamet_bilan_prenatal_tree" model="ir.ui.view">
+        <field name="name">salamet.bilan.prenatal.tree</field>
+        <field name="model">salamet.bilan.prenatal</field>
+        <field name="arch" type="xml">
+            <list string="Bilans Prénataux" create="true" edit="true" delete="true"
+                  decoration-warning="state == 'prescrit'"
+                  decoration-info="state == 'en_cours'"
+                  decoration-success="state == 'termine'"
+                  decoration-danger="alerte_active == True">
+                <field name="name"/>
+                <field name="grossesse_id"/>
+                <field name="patiente_id"/>
+                <field name="medecin_id"/>
+                <field name="date_bilan"/>
+                <field name="terme_grossesse"/>
+                <field name="trimestre"/>
+                <field name="type_bilan"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'prescrit'"
+                       decoration-info="state in ['en_cours', 'termine']"
+                       decoration-success="state == 'interprete'"
+                       decoration-danger="state == 'alerte'"/>
+                <field name="alerte_active" invisible="1"/>
+                <field name="resultats_normaux" widget="boolean_toggle"/>
+                <field name="niveau_alerte" widget="badge"
+                       decoration-success="niveau_alerte == 'aucune'"
+                       decoration-warning="niveau_alerte == 'surveillance'"
+                       decoration-danger="niveau_alerte == 'urgence'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue Formulaire Bilan Prénatal -->
+    <record id="view_salamet_bilan_prenatal_form" model="ir.ui.view">
+        <field name="name">salamet.bilan.prenatal.form</field>
+        <field name="model">salamet.bilan.prenatal</field>
+        <field name="arch" type="xml">
+            <form string="Bilan Prénatal">
+                <header>
+                    <button name="action_marquer_termine" type="object" string="Marquer terminé"
+                            class="oe_highlight" invisible="state in ['termine', 'interprete']"/>
+                    <button name="action_interpreter" type="object" string="Interpréter"
+                            class="btn-primary" invisible="state != 'termine'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="prescrit,en_cours,termine,interprete"/>
+                </header>
+
+                <sheet>
+                    <!-- Alerte en haut si nécessaire -->
+                    <div class="alert alert-danger" role="alert" invisible="not alerte_active">
+                        <strong>⚠️ ALERTE MÉDICALE</strong>
+                        <p>Ce bilan présente des anomalies nécessitant une attention particulière.</p>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h3>
+                            <field name="patiente_id" readonly="1"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group name="info_generale" string="Informations générales">
+                            <field name="grossesse_id" required="1" readonly="grossesse_readonly"/>
+                            <field name="grossesse_readonly" invisible="1"/>
+                            <field name="medecin_id" required="1"/>
+                            <field name="date_bilan" required="1"/>
+                            <field name="type_bilan" required="1"/>
+                        </group>
+                        <group name="info_grossesse" string="Grossesse">
+                            <field name="terme_grossesse" readonly="1"/>
+                            <field name="trimestre" readonly="1"/>
+                            <field name="niveau_alerte"/>
+                            <field name="alerte_active" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Page Examens Biologiques -->
+<!-- Remplacer la page "Examens Biologiques" par ces deux pages séparées -->
+
+<!-- Page Hématologie -->
+<page string="Hématologie" name="hematologie">
+    <field name="hematologie_ids" nolabel="1">
+        <list editable="bottom">
+            <field name="date_examen"/>
+            <field name="hemoglobine"/>
+            <field name="hematocrite"/>
+            <field name="plaquettes"/>
+            <field name="leucocytes"/>
+            <field name="anomalie_hematologie" widget="badge"
+                   decoration-success="anomalie_hematologie == 'normal'"
+                   decoration-warning="anomalie_hematologie == 'limite'"
+                   decoration-danger="anomalie_hematologie == 'anormal'"/>
+            <field name="commentaire_hematologie"/>
+        </list>
+    </field>
+</page>
+
+<!-- Page Biochimie -->
+<page string="Biochimie" name="biochimie">
+    <field name="biochimie_ids" nolabel="1">
+        <list editable="bottom">
+            <field name="date_examen"/>
+            <field name="glycemie"/>
+            <field name="hgpo"/>
+            <field name="proteinurie"/>
+            <field name="anomalie_biochimie" widget="badge"
+                   decoration-success="anomalie_biochimie == 'normal'"
+                   decoration-warning="anomalie_biochimie == 'limite'"
+                   decoration-danger="anomalie_biochimie == 'anormal'"/>
+            <field name="commentaire_biochimie"/>
+        </list>
+    </field>
+</page>
+
+
+                        <!-- Page Sérologies MODIFIÉE -->
+<page string="Sérologies" name="serologies">
+    <field name="serologie_ids" nolabel="1">
+        <list editable="bottom">
+            <field name="date_examen"/>
+            <field name="type_serologie" required="1"/>
+            <field name="resultat" required="1"/>
+            <field name="valeur_numerique"/>
+            <field name="unite"/>
+            <field name="valeurs_reference"/>
+            <field name="interpretation" widget="badge"
+                   decoration-success="interpretation == 'normal'"
+                   decoration-info="interpretation == 'immunise'"
+                   decoration-warning="interpretation == 'surveillance'"
+                   decoration-danger="interpretation == 'positif'"/>
+            <field name="commentaire"/>
+        </list>
+        <form>
+            <sheet>
+                <group>
+                    <group name="info_serologie" string="Informations générales">
+                        <field name="date_examen" required="1"/>
+                        <field name="type_serologie" required="1"/>
+                        <field name="resultat" required="1"/>
+                    </group>
+                    <group name="valeurs" string="Valeurs">
+                        <field name="valeur_numerique"/>
+                        <field name="unite"/>
+                        <field name="valeurs_reference"/>
+                        <field name="interpretation"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="commentaire" placeholder="Commentaires sur cette sérologie..."/>
+                </group>
+            </sheet>
+        </form>
+    </field>
+</page>
+
+
+                        <!-- Page Échographies -->
+                        <page string="Échographies" name="echographies">
+                            <field name="echographie_ids">
+                                <list editable="bottom">
+                                    <field name="date_echo"/>
+                                    <field name="terme_echo"/>
+                                    <field name="type_echo"/>
+                                    <field name="lcc"/>
+                                    <field name="cn"/>
+                                    <field name="bip"/>
+                                    <field name="lf"/>
+                                    <field name="efw"/>
+                                    <field name="presentation"/>
+                                    <field name="morphologie_normale"/>
+                                    <field name="liquide_amniotique"/>
+                                    <field name="doppler_realise"/>
+                                    <field name="niveau_alerte_echo" widget="badge"
+                                           decoration-success="niveau_alerte_echo == 'aucune'"
+                                           decoration-warning="niveau_alerte_echo == 'surveillance'"
+                                           decoration-danger="niveau_alerte_echo == 'urgente'"/>
+                                    <field name="alerte" invisible="1"/>
+                                </list>
+                                <form>
+                                    <sheet>
+                                        <div class="alert alert-danger" role="alert" invisible="niveau_alerte_echo != 'urgente'">
+                                            <strong>🚨 ALERTE ÉCHOGRAPHIQUE</strong>
+                                            <p>Cette échographie nécessite une attention médicale urgente.</p>
+                                        </div>
+
+                                        <group>
+                                            <group name="info_echo" string="Informations générales">
+                                                <field name="date_echo"/>
+                                                <field name="terme_echo"/>
+                                                <field name="type_echo"/>
+                                                <field name="niveau_alerte_echo" readonly="1"/>
+                                            </group>
+                                            <group name="presentation" string="Présentation">
+                                                <field name="presentation"/>
+                                                <field name="morphologie_normale"/>
+                                            </group>
+                                        </group>
+
+                                        <notebook>
+                                            <!-- Page Biométrie -->
+                                            <page string="Biométrie" name="biometrie">
+                                                <group>
+                                                    <group name="biometrie_t1" string="1er trimestre">
+                                                        <field name="lcc"/>
+                                                        <field name="cn"/>
+                                                    </group>
+                                                    <group name="biometrie_classique" string="Mesures classiques">
+                                                        <field name="bip"/>
+                                                        <field name="pc"/>
+                                                        <field name="pa"/>
+                                                        <field name="lf"/>
+                                                        <field name="efw"/>
+                                                                                                            </group>
+                                                </group>
+                                            </page>
+
+                                            <!-- Page Morphologie -->
+                                            <page string="Morphologie" name="morphologie">
+                                                <group>
+                                                    <field name="morphologie_normale"/>
+                                                    <field name="anomalies_morphologiques"
+                                                           invisible="morphologie_normale"
+                                                           placeholder="Décrire les anomalies morphologiques détectées..."/>
+                                                </group>
+                                            </page>
+
+                                            <!-- Page Annexes -->
+                                            <page string="Annexes" name="annexes">
+                                                <group>
+                                                    <group name="liquide" string="Liquide amniotique">
+                                                        <field name="liquide_amniotique"/>
+                                                    </group>
+                                                    <group name="placenta" string="Placenta">
+                                                        <field name="placenta_position"/>
+                                                    </group>
+                                                </group>
+                                            </page>
+
+                                            <!-- Page Doppler -->
+                                            <page string="Doppler" name="doppler">
+                                                <group>
+                                                    <field name="doppler_realise"/>
+                                                </group>
+
+                                                <group invisible="not doppler_realise">
+                                                    <group name="doppler_uterin" string="Doppler utérin">
+                                                        <field name="doppler_uterine_droite"/>
+                                                        <field name="doppler_uterine_gauche"/>
+                                                        <field name="notch_uterine"/>
+                                                    </group>
+                                                    <group name="doppler_foetal" string="Doppler fœtal">
+                                                        <field name="doppler_ombilical"/>
+                                                        <field name="doppler_cerebrale"/>
+                                                        <field name="doppler_cerebroplacentaire" readonly="1"/>
+                                                    </group>
+                                                </group>
+
+                                                <group invisible="not doppler_realise">
+                                                    <group name="doppler_veineux" string="Doppler veineux">
+                                                        <field name="doppler_ductus"/>
+                                                    </group>
+                                                </group>
+                                            </page>
+
+                                            <!-- Page Conclusion -->
+                                            <page string="Conclusion" name="conclusion">
+                                                <group>
+                                                    <field name="conclusion" placeholder="Conclusion de l'échographie..."/>
+                                                    <field name="recommandations" placeholder="Recommandations et conduite à tenir..."/>
+                                                </group>
+                                            </page>
+                                        </notebook>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Page Dépistage MODIFIÉE -->
+
+<page string="Dépistage" name="depistage">
+    <group>
+        <group name="aneuploidies" string="Dépistage des aneuploïdies">
+            <field name="depistage_aneuploidies" widget="radio"/>
+            <field name="risque_aneuploidies"
+                   invisible="depistage_aneuploidies != 'fait'"
+                   required="depistage_aneuploidies == 'fait'"/>
+            <field name="notes_depistage"
+                   invisible="risque_aneuploidies not in ['intermediaire', 'eleve']"
+                   placeholder="Notes complémentaires sur le risque intermédiaire/élevé..."
+                   required="risque_aneuploidies in ['intermediaire', 'eleve']"/>
+        </group>
+    </group>
+
+    <!-- Message d'information -->
+    <div class="alert alert-info" role="alert"
+         invisible="depistage_aneuploidies != 'fait'">
+        <strong>ℹ️ Information</strong>
+        <p>Le dépistage des aneuploïdies permet d'évaluer le risque de trisomie 21, 18 et 13.</p>
+    </div>
+
+    <!-- Alerte pour risque élevé -->
+    <div class="alert alert-warning" role="alert"
+         invisible="risque_aneuploidies != 'eleve'">
+        <strong>⚠️ Attention</strong>
+        <p>Risque élevé détecté - Conseil génétique et examens complémentaires à envisager.</p>
+    </div>
+</page>
+
+
+                        <!-- Page Résultats et Interprétation -->
+                        <page string="Résultats" name="resultats">
+                            <group>
+                                <field name="resultats_normaux" readonly="1"/>
+                                <field name="anomalies_detectees" readonly="1"
+                                       invisible="resultats_normaux"/>
+                            </group>
+                            <group>
+                                <field name="interpretation" placeholder="Interprétation médicale des résultats..."/>
+                                <field name="recommandations" placeholder="Recommandations et conduite à tenir..."/>
+                            </group>
+                        </page>
+
+                        <!-- Page Suivi -->
+                        <page string="Suivi" name="suivi">
+                            <group>
+                                <field name="prochain_bilan"/>
+                                <field name="notes" placeholder="Notes complémentaires..."/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- Chatter -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Kanban Bilan Prénatal -->
+    <record id="view_salamet_bilan_prenatal_kanban" model="ir.ui.view">
+        <field name="name">salamet.bilan.prenatal.kanban</field>
+        <field name="model">salamet.bilan.prenatal</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="patiente_id"/>
+                <field name="date_bilan"/>
+                <field name="terme_grossesse"/>
+                <field name="trimestre"/>
+                <field name="type_bilan"/>
+                <field name="state"/>
+                <field name="alerte_active"/>
+                <field name="niveau_alerte"/>
+                <field name="resultats_normaux"/>
+                <field name="depistage_aneuploidies"/>
+                <field name="risque_aneuploidies"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                            <span t-if="record.alerte_active.raw_value"
+                                                  class="badge badge-danger ml-2">⚠️</span>
+                                        </strong>
+                                        <small class="o_kanban_record_subtitle text-muted">
+                                            <field name="patiente_id"/>
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <i class="fa fa-calendar"/> <field name="date_bilan"/>
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="fa fa-clock-o"/> <field name="terme_grossesse"/> SA
+                                        </div>
+                                    </div>
+                                    <div class="row mt-1">
+                                        <div class="col-12">
+                                            <span class="badge badge-info">
+                                                <field name="type_bilan"/>
+                                            </span>
+                                            <span t-if="record.trimestre.raw_value"
+                                                  class="badge badge-secondary ml-1">
+                                                T<field name="trimestre"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-1" t-if="record.depistage_aneuploidies.raw_value == 'fait'">
+                                        <div class="col-12">
+                                            <span t-if="record.risque_aneuploidies.raw_value == 'faible'"
+                                                  class="badge badge-success">
+                                                🧬 Risque faible
+                                            </span>
+                                            <span t-if="record.risque_aneuploidies.raw_value == 'intermediaire'"
+                                                  class="badge badge-warning">
+                                                🧬 Risque intermédiaire
+                                            </span>
+                                            <span t-if="record.risque_aneuploidies.raw_value == 'eleve'"
+                                                  class="badge badge-danger">
+                                                🧬 Risque élevé
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2" t-if="record.niveau_alerte.raw_value != 'aucune'">
+                                        <div class="col-12">
+                                            <span t-if="record.niveau_alerte.raw_value == 'surveillance'"
+                                                  class="badge badge-warning">
+                                                Surveillance
+                                            </span>
+                                            <span t-if="record.niveau_alerte.raw_value == 'urgence'"
+                                                  class="badge badge-danger">
+                                                Urgence
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Recherche Bilan Prénatal -->
+    <record id="view_salamet_bilan_prenatal_search" model="ir.ui.view">
+        <field name="name">salamet.bilan.prenatal.search</field>
+        <field name="model">salamet.bilan.prenatal</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Bilans Prénataux">
+                <field name="name" string="Référence"/>
+                <field name="patiente_id" string="Patiente"/>
+                <field name="medecin_id" string="Médecin"/>
+                <field name="grossesse_id" string="Grossesse"/>
+
+                <!-- Filtres par état -->
+                <filter string="Prescrit" name="prescrit" domain="[('state', '=', 'prescrit')]"/>
+                <filter string="En cours" name="en_cours" domain="[('state', '=', 'en_cours')]"/>
+                <filter string="Terminé" name="termine" domain="[('state', '=', 'termine')]"/>
+                <filter string="Interprété" name="interprete" domain="[('state', '=', 'interprete')]"/>
+
+                <separator/>
+
+                <!-- Filtres par type -->
+                <filter string="Obligatoire" name="obligatoire" domain="[('type_bilan', '=', 'obligatoire')]"/>
+                <filter string="Complémentaire" name="complementaire" domain="[('type_bilan', '=', 'complementaire')]"/>
+                <filter string="Urgence" name="urgence" domain="[('type_bilan', '=', 'urgence')]"/>
+
+                <separator/>
+
+                <!-- Filtres par trimestre -->
+                <filter string="1er Trimestre" name="t1" domain="[('trimestre', '=', '1')]"/>
+                <filter string="2ème Trimestre" name="t2" domain="[('trimestre', '=', '2')]"/>
+                <filter string="3ème Trimestre" name="t3" domain="[('trimestre', '=', '3')]"/>
+
+                <separator/>
+
+                <!-- Filtres dépistage aneuploïdies NOUVEAUX -->
+                <filter string="🧬 Dépistage fait" name="depistage_fait" domain="[('depistage_aneuploidies', '=', 'fait')]"/>
+                <filter string="🟢 Risque faible" name="risque_faible" domain="[('risque_aneuploidies', '=', 'faible')]"/>
+                <filter string="🟡 Risque intermédiaire" name="risque_intermediaire" domain="[('risque_aneuploidies', '=', 'intermediaire')]"/>
+                <filter string="🔴 Risque élevé" name="risque_eleve" domain="[('risque_aneuploidies', '=', 'eleve')]"/>
+
+                <separator/>
+
+                <!-- Filtres d'alerte -->
+                <filter string="🚨 Alertes actives" name="alertes" domain="[('alerte_active', '=', True)]"/>
+                <filter string="⚠️ Surveillance" name="surveillance" domain="[('niveau_alerte', '=', 'surveillance')]"/>
+                <filter string="🆘 Urgence" name="urgence_niveau" domain="[('niveau_alerte', '=', 'urgence')]"/>
+                <filter string="❌ Résultats anormaux" name="anormaux" domain="[('resultats_normaux', '=', False)]"/>
+
+                <separator/>
+
+                <!-- Filtres temporels -->
+                <filter string="Aujourd'hui" name="aujourd_hui"
+                        domain="[('date_bilan', '=', context_today())]"/>
+                <filter string="Cette semaine" name="cette_semaine"
+                        domain="[('date_bilan', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Ce mois" name="ce_mois"
+                        domain="[('date_bilan', '>=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+
+                <group expand="0" string="Grouper par">
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Type de bilan" name="group_type" context="{'group_by': 'type_bilan'}"/>
+                    <filter string="Trimestre" name="group_trimestre" context="{'group_by': 'trimestre'}"/>
+                    <filter string="Médecin" name="group_medecin" context="{'group_by': 'medecin_id'}"/>
+                    <filter string="Niveau d'alerte" name="group_alerte" context="{'group_by': 'niveau_alerte'}"/>
+                    <filter string="Risque aneuploïdies" name="group_risque" context="{'group_by': 'risque_aneuploidies'}"/>
+                    <filter string="Mois" name="group_mois" context="{'group_by': 'date_bilan:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =================== ACTIONS =================== -->
+
+    <!-- Action principale Bilans Prénataux -->
+    <record id="action_salamet_bilan_prenatal" model="ir.actions.act_window">
+        <field name="name">Bilans Prénataux</field>
+        <field name="res_model">salamet.bilan.prenatal</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_salamet_bilan_prenatal_search"/>
+        <field name="context">{
+            'search_default_alertes': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre premier bilan prénatal
+            </p>
+            <p>
+                Les bilans prénataux permettent de suivre l'évolution de la grossesse
+                et de détecter précocement d'éventuelles complications.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action pour les bilans d'une grossesse -->
+    <record id="action_salamet_bilan_prenatal_grossesse" model="ir.actions.act_window">
+        <field name="name">Bilans de la grossesse</field>
+        <field name="res_model">salamet.bilan.prenatal</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('grossesse_id', '=', active_id)]</field>
+        <field name="context">{'default_grossesse_id': active_id}</field>
+    </record>
+
+    <!-- Action pour les bilans avec alertes -->
+    <record id="action_salamet_bilan_prenatal_alertes" model="ir.actions.act_window">
+        <field name="name">🚨 Bilans avec Alertes</field>
+        <field name="res_model">salamet.bilan.prenatal</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('alerte_active', '=', True)]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Action pour dépistage aneuploïdies NOUVELLE -->
+    <record id="action_salamet_bilan_prenatal_depistage" model="ir.actions.act_window">
+        <field name="name">🧬 Dépistage Aneuploïdies</field>
+        <field name="res_model">salamet.bilan.prenatal</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('depistage_aneuploidies', '=', 'fait')]</field>
+        <field name="context">{'search_default_group_risque': 1}</field>
+    </record>
+
+    <!-- =================== VUES ÉCHOGRAPHIE =================== -->
+
+    <!-- Vue Liste Échographies -->
+    <record id="view_salamet_echographie_tree" model="ir.ui.view">
+        <field name="name">salamet.echographie.tree</field>
+        <field name="model">salamet.echographie</field>
+        <field name="arch" type="xml">
+            <list string="Échographies"
+                  decoration-danger="niveau_alerte_echo == 'urgente'"
+                  decoration-warning="niveau_alerte_echo == 'surveillance'">
+                <field name="date_echo"/>
+                <field name="grossesse_id"/>
+                <field name="terme_echo"/>
+                <field name="type_echo"/>
+                <field name="lcc"/>
+                <field name="cn"/>
+                <field name="bip"/>
+                <field name="efw"/>
+                <field name="presentation"/>
+                <field name="morphologie_normale" widget="boolean_toggle"/>
+                <field name="liquide_amniotique"/>
+                <field name="placenta_position"/>
+                <field name="doppler_realise" widget="boolean_toggle"/>
+                <field name="niveau_alerte_echo" widget="badge"
+                       decoration-success="niveau_alerte_echo == 'aucune'"
+                       decoration-warning="niveau_alerte_echo == 'surveillance'"
+                       decoration-danger="niveau_alerte_echo == 'urgente'"/>
+                <field name="alerte" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action Échographies -->
+    <record id="action_salamet_echographie" model="ir.actions.act_window">
+        <field name="name">Échographies</field>
+        <field name="res_model">salamet.echographie</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre première échographie
+            </p>
+        </field>
+    </record>
+
+</odoo>

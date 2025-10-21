@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Template du tableau de bord -->
+        <template id="salamet_dashboard_template">
+            <div class="salamet-dashboard">
+                <!-- En-tête -->
+                <div class="dashboard-header mb-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h1 class="dashboard-title">
+                                🏥 <strong>SALAMET</strong> - Tableau de bord
+                            </h1>
+                            <p class="text-muted">
+                                Surveillance et suivi des grossesses à risque
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <div class="dashboard-date">
+                                <i class="fa fa-calendar"></i>
+                                <span id="current-date"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPIs principaux -->
+                <div class="dashboard-kpis mb-4">
+                    <div class="row" id="kpis-container">
+                        <!-- Les KPIs seront injectés ici par JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Alertes et notifications urgentes -->
+                <div class="dashboard-alerts mb-4" id="alerts-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-danger">
+                                <div class="card-header bg-danger text-white">
+                                    <h5><i class="fa fa-exclamation-triangle"></i> Notifications urgentes</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush" id="notifications-urgentes">
+                                        <!-- Notifications urgentes -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5><i class="fa fa-calendar-check"></i> Consultations du jour</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush" id="consultations-jour">
+                                        <!-- Consultations du jour -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grossesses à risque -->
+                <div class="dashboard-risks mb-4">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5><i class="fa fa-exclamation-circle"></i> Grossesses à risque</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="grossesses-risque">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Patiente</th>
+                                            <th>Terme</th>
+                                            <th>Pathologie</th>
+                                            <th>Dernière consultation</th>
+                                            <th>Médecin</th>
+                                            <th>Niveau</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Grossesses à risque -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphiques et statistiques -->
+                <div class="dashboard-charts mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fa fa-chart-line"></i> Consultations par semaine</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="chart-consultations" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fa fa-chart-pie"></i> Répartition des pathologies</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="chart-pathologies" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="dashboard-actions">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fa fa-bolt"></i> Actions rapides</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary btn-block" onclick="salamet.dashboard.nouvelleConsultation()">
+                                        <i class="fa fa-stethoscope"></i><br/>
+                                        Nouvelle consultation
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-success btn-block" onclick="salamet.dashboard.nouvelleGrossesse()">
+                                        <i class="fa fa-plus"></i><br/>
+                                        Nouvelle grossesse
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-warning btn-block" onclick="salamet.dashboard.voirNotifications()">
+                                        <i class="fa fa-bell"></i><br/>
+                                        Toutes les notifications
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-danger btn-block" onclick="salamet.dashboard.voirGrossessesRisque()">
+                                        <i class="fa fa-exclamation-triangle"></i><br/>
+                                        Grossesses à risque
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Action du tableau de bord -->
+        <record id="action_salamet_dashboard" model="ir.actions.client">
+            <field name="name">🏥 Tableau de bord SALAMET</field>
+            <field name="tag">salamet_dashboard</field>
+        </record>
+
+        <!-- Vue formulaire pour configuration -->
+        <record id="view_salamet_dashboard_form" model="ir.ui.view">
+            <field name="name">salamet.dashboard.form</field>
+            <field name="model">salamet.dashboard</field>
+            <field name="arch" type="xml">
+                <form string="Configuration du tableau de bord">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

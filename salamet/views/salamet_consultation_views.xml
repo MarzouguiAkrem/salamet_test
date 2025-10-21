@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+      <!-- Vue formulaire consultation CORRIGÉE pour Odoo 17+ -->
+<record id="view_salamet_consultation_form" model="ir.ui.view">
+    <field name="name">salamet.consultation.form</field>
+    <field name="model">salamet.consultation</field>
+    <field name="arch" type="xml">
+        <form string="Consultation Prénatale SALAMET">
+            <header>
+                <!-- Alertes visuelles -->
+                <div class="alert alert-danger" role="alert"
+                     invisible="niveau_alerte != 'rouge'">
+                    🚨 <strong>URGENCE DÉTECTÉE</strong> - Prise en charge immédiate requise
+                </div>
+                <div class="alert alert-warning" role="alert"
+                     invisible="niveau_alerte != 'orange'">
+                    ⚠️ <strong>SURVEILLANCE RENFORCÉE</strong> - Attention particulière requise
+                </div>
+
+                <!-- Boutons d'action -->
+                <button name="action_generer_alerte_urgence" type="object"
+                        string="🚨 Générer Alerte" class="btn-danger"
+                        invisible="urgence_detectee == False"/>
+                <button name="action_programmer_suivi" type="object"
+                        string="📅 Programmer Suivi" class="btn-primary"/>
+
+                <!-- Statut -->
+                <field name="state" widget="statusbar" statusbar_visible="brouillon,validee"/>
+            </header>
+
+            <sheet>
+                <!-- En-tête avec informations principales -->
+                <div class="oe_title">
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                    <div class="o_row">
+                        <span invisible="niveau_alerte != 'rouge'"
+                              class="badge badge-danger">
+                            🚨 Urgence
+                        </span>
+                        <span invisible="niveau_alerte != 'orange'"
+                              class="badge badge-warning">
+                            ⚠️ Surveillance
+                        </span>
+                        <span invisible="niveau_alerte != 'vert'"
+                              class="badge badge-success">
+                            ✅ Normal
+                        </span>
+                    </div>
+                </div>
+
+                <notebook>
+                    <!-- ONGLET 1: INFORMATIONS GÉNÉRALES -->
+                    <page string="📋 Informations Générales" name="general_info">
+                        <group>
+                            <group string="👤 Patiente et grossesse">
+                                <field name="patiente_id" options="{'no_create': True}"/>
+                                <field name="grossesse_id"
+                                       domain="[('patiente_id', '=', patiente_id)]"
+                                       options="{'no_create': True}"/>
+                                <field name="medecin_id" options="{'no_create': True}"/>
+                            </group>
+                            <group string="📅 Consultation">
+                                <field name="date_consultation"/>
+                                <field name="type_consultation"/>
+                                <field name="terme_grossesse" widget="float_time"/>
+                                <field name="niveau_alerte"/>
+                            </group>
+                        </group>
+
+                        <group string="📝 Motif de consultation">
+                            <field name="motif_consultation" nolabel="1"
+                                   placeholder="Motif de la consultation..."/>
+                        </group>
+                    </page>
+
+                    <!-- ONGLET 2: EXAMEN CLINIQUE -->
+                    <page string="🩺 Examen Clinique" name="clinical_exam">
+                        <!-- Constantes vitales -->
+                        <group string="📊 Constantes vitales">
+                            <group>
+                                <field name="poids_actuel"/>
+                                <field name="prise_poids" readonly="1"/>
+                                <field name="temperature"/>
+                                <field name="frequence_cardiaque"/>
+                            </group>
+                            <group>
+                                <label for="tension_arterielle_systolique" string="Tension artérielle"/>
+                                <div class="o_row">
+                                    <field name="tension_arterielle_systolique"
+                                           placeholder="Systolique"/>
+                                    <span>/</span>
+                                    <field name="tension_arterielle_diastolique"
+                                           placeholder="Diastolique"/>
+                                    <span>mmHg</span>
+                                </div>
+                                <field name="tension_arterielle" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <!-- Examen obstétrical -->
+                        <group string="🤱 Examen obstétrical">
+                            <group>
+                                <field name="hauteur_uterine"/>
+                                <field name="presentation_foetale"/>
+                                <field name="col_uterus"/>
+                            </group>
+                            <group>
+                                <field name="bcf"/>
+                                <field name="mouvements_actifs_foetus"/>
+                            </group>
+                        </group>
+
+                        <!-- Examens complémentaires -->
+                        <group string="🧪 Examens complémentaires">
+                            <group>
+                                <field name="proteinurie"/>
+                                <field name="glycosurie"/>
+                            </group>
+                            <group>
+                                <field name="oedemes"/>
+                            </group>
+                        </group>
+                    </page>
+
+                    <!-- ONGLET 3: DIAGNOSTIC ET CONDUITE -->
+                    <page string="🏥 Diagnostic et Conduite" name="diagnosis">
+                        <group string="📋 Observations cliniques">
+                            <field name="observations" nolabel="1"
+                                   placeholder="Observations détaillées de l'examen clinique..."/>
+                        </group>
+
+                        <group string="🎯 Diagnostic">
+                            <field name="diagnostic" nolabel="1"
+                                   placeholder="Diagnostic médical..."/>
+                        </group>
+
+                        <group string="📝 Conduite à tenir">
+                            <field name="conduite_tenir" nolabel="1"
+                                   placeholder="Conduite à tenir et recommandations..."/>
+                        </group>
+
+                        <group string="💊 Prescriptions">
+                            <field name="prescriptions" nolabel="1"
+                                   placeholder="Prescriptions médicamenteuses et examens..."/>
+                        </group>
+                    </page>
+
+                    <!-- ONGLET 4: SUIVI ET ALERTES -->
+                    <page string="🔔 Suivi et Alertes" name="follow_up">
+                        <group>
+                            <group string="📅 Programmation du suivi">
+                                <field name="prochaine_consultation"/>
+                            </group>
+                            <group string="🚨 Alertes">
+                                <field name="urgence_detectee"/>
+                                <field name="hospitalisation_necessaire"/>
+                            </group>
+                        </group>
+
+                        <!-- Indicateurs visuels de risque -->
+                        <div class="row mt16" invisible="niveau_alerte == 'vert'">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h4>📊 Indicateurs de surveillance</h4>
+                                    <ul>
+                                        <li invisible="tension_arterielle_systolique &lt; 140">
+                                            🩸 Tension artérielle élevée
+                                        </li>
+                                        <li invisible="proteinurie not in ['positive_2', 'positive_3', 'positive_4']">
+                                            🧪 Protéinurie significative
+                                        </li>
+                                        <li invisible="bcf &gt;= 110 and bcf &lt;= 160">
+                                            💓 Rythme cardiaque fœtal anormal
+                                        </li>
+                                        <li invisible="oedemes not in ['importants', 'generalises']">
+                                            🦵 Œdèmes importants
+                                        </li>
+                                        <li invisible="prise_poids &lt;= 18">
+                                            ⚖️ Prise de poids excessive
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </page>
+                </notebook>
+            </sheet>
+
+            <!-- Chatter -->
+            <chatter/>
+        </form>
+    </field>
+</record>
+        <!-- Vue liste consultations CORRIGÉE -->
+        <record id="view_salamet_consultation_tree" model="ir.ui.view">
+            <field name="name">salamet.consultation.tree</field>
+            <field name="model">salamet.consultation</field>
+            <field name="arch" type="xml">
+                <list string="Consultations Prénatales"
+                      decoration-success="niveau_alerte == 'vert'"
+                      decoration-warning="niveau_alerte == 'orange'"
+                      decoration-danger="niveau_alerte == 'rouge'"
+                      decoration-bf="urgence_detectee == True">
+                    <field name="name"/>
+                    <field name="date_consultation"/>
+                    <field name="patiente_id"/>
+                    <field name="terme_grossesse" widget="float_time"/>
+                    <field name="type_consultation"/>
+                    <field name="medecin_id"/>
+                    <field name="tension_arterielle"/>
+                    <field name="poids_actuel"/>
+                    <field name="bcf"/>
+                    <field name="niveau_alerte"/>
+                    <field name="prochaine_consultation"/>
+                    <field name="urgence_detectee" invisible="1"/>
+                    <field name="state"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue Kanban consultations CORRIGÉE -->
+        <record id="view_salamet_consultation_kanban" model="ir.ui.view">
+            <field name="name">salamet.consultation.kanban</field>
+            <field name="model">salamet.consultation</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="niveau_alerte" class="o_kanban_small_column">
+                    <field name="patiente_id"/>
+                    <field name="date_consultation"/>
+                    <field name="terme_grossesse"/>
+                    <field name="type_consultation"/>
+                    <field name="tension_arterielle"/>
+                    <field name="bcf"/>
+                    <field name="niveau_alerte"/>
+                    <field name="urgence_detectee"/>
+                    <field name="prochaine_consultation"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="patiente_id"/>
+                                            </strong>
+                                            <small class="o_kanban_record_subtitle text-muted">
+                                                <field name="date_consultation"/>
+                                            </small>
+                                        </div>
+                                        <div class="o_kanban_record_top_right">
+                                            <span t-if="record.urgence_detectee.raw_value"
+                                                  class="badge badge-danger">🚨</span>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <div>⏱️ <field name="terme_grossesse"/> SA</div>
+                                        <div>🩺 <field name="type_consultation"/></div>
+                                        <div t-if="record.tension_arterielle.raw_value">
+                                            🩸 <field name="tension_arterielle"/> mmHg
+                                        </div>
+                                        <div t-if="record.bcf.raw_value">
+                                            💓 <field name="bcf"/> bpm
+                                        </div>
+                                        <div t-if="record.prochaine_consultation.raw_value">
+                                            📅 Prochain RDV: <field name="prochaine_consultation"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue recherche consultations CORRIGÉE -->
+        <record id="view_salamet_consultation_search" model="ir.ui.view">
+            <field name="name">salamet.consultation.search</field>
+            <field name="model">salamet.consultation</field>
+            <field name="arch" type="xml">
+                <search string="Rechercher Consultations">
+                    <field name="patiente_id" string="Patiente"/>
+                    <field name="medecin_id" string="Médecin"/>
+                    <field name="grossesse_id" string="Grossesse"/>
+                    <field name="name" string="Numéro"/>
+
+                    <!-- Filtres principaux -->
+                    <filter string="🚨 Urgences" name="urgences"
+                            domain="[('urgence_detectee', '=', True)]"/>
+                    <filter string="🔴 Niveau rouge" name="niveau_rouge"
+                            domain="[('niveau_alerte', '=', 'rouge')]"/>
+                    <filter string="🟠 Niveau orange" name="niveau_orange"
+                            domain="[('niveau_alerte', '=', 'orange')]"/>
+                    <filter string="🟢 Niveau vert" name="niveau_vert"
+                            domain="[('niveau_alerte', '=', 'vert')]"/>
+
+                    <separator/>
+
+                    <!-- Filtres par type -->
+                    <filter string="🩺 Première consultation" name="premiere"
+                            domain="[('type_consultation', '=', 'premiere')]"/>
+                    <filter string="📋 Suivi" name="suivi"
+                            domain="[('type_consultation', '=', 'suivi')]"/>
+                    <filter string="🚨 Urgence" name="urgence_type"
+                            domain="[('type_consultation', '=', 'urgence')]"/>
+
+                    <separator/>
+
+                    <!-- Filtres médicaux -->
+                    <filter string="🩸 HTA" name="hta"
+                            domain="[('tension_arterielle_systolique', '>=', 140)]"/>
+                    <filter string="🧪 Protéinurie" name="proteinurie"
+                            domain="[('proteinurie', 'in', ['positive_1', 'positive_2', 'positive_3', 'positive_4'])]"/>
+                    <filter string="💓 BCF anormal" name="bcf_anormal"
+                            domain="['|', ('bcf', '&lt;', 110), ('bcf', '&gt;', 160)]"/>
+                    <filter string="🏥 Hospitalisation" name="hospitalisation"
+                            domain="[('hospitalisation_necessaire', '=', True)]"/>
+
+                    <!-- Filtres par date -->
+                    <separator/>
+                    <filter string="📅 Aujourd'hui" name="today"
+                            domain="[('date_consultation', '&gt;=', context_today().strftime('%Y-%m-%d')), ('date_consultation', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="📅 Cette semaine" name="this_week"
+                            domain="[('date_consultation', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')), ('date_consultation', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                    <filter string="📅 Ce mois" name="this_month"
+                            domain="[('date_consultation', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+
+                    <group expand="0" string="Grouper par">
+                        <filter string="Niveau d'alerte" name="group_by_alerte"
+                                context="{'group_by': 'niveau_alerte'}"/>
+                        <filter string="Type de consultation" name="group_by_type"
+                                context="{'group_by': 'type_consultation'}"/>
+                        <filter string="Médecin" name="group_by_medecin"
+                                context="{'group_by': 'medecin_id'}"/>
+                        <filter string="Date" name="group_by_date"
+                                context="{'group_by': 'date_consultation:day'}"/>
+                        <filter string="Patiente" name="group_by_patiente"
+                                context="{'group_by': 'patiente_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vue calendrier consultations CORRIGÉE -->
+      <record id="view_salamet_consultation_calendar" model="ir.ui.view">
+    <field name="name">salamet.consultation.calendar</field>
+    <field name="model">salamet.consultation</field>
+    <field name="arch" type="xml">
+        <calendar string="Planning des Consultations"
+                  date_start="date_consultation"
+                  color="medecin_id">
+            <field name="patiente_id"/>
+              <field name="grossesse_id"/>
+    <field name="type_consultation"/>
+            <field name="terme_grossesse"/>
+    <field name="niveau_alerte"/>
+            <field name="urgence_detectee"/>
+    <field name="tension_arterielle"/>
+                <field name="bcf"/>
+
+
+        </calendar>
+    </field>
+</record>
+
+        <!-- Actions pour les consultations -->
+        <record id="action_salamet_consultation" model="ir.actions.act_window">
+            <field name="name">Consultations Prénatales</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">list,kanban,form,calendar,</field>
+            <field name="context">{
+                'search_default_this_week': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    📋 Créer une nouvelle consultation prénatale
+                </p>
+                <p>
+                    Gérez le suivi médical des grossesses avec un système d'alertes
+                    automatique selon les paramètres cliniques de chaque patiente.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action spécifique pour le calendrier -->
+        <record id="action_salamet_consultation_calendar" model="ir.actions.act_window">
+            <field name="name">📅 Planning des Consultations</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">calendar,kanban,list,form</field>
+            <field name="view_id" ref="view_salamet_consultation_calendar"/>
+            <field name="context">{
+                'search_default_this_week': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    📅 Planifiez vos consultations sur le calendrier !
+                </p>
+                <p>
+                    Visualisez et organisez facilement le planning des consultations
+                    prénatales avec un code couleur par médecin et des alertes visuelles.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action pour les urgences -->
+        <record id="action_salamet_consultation_urgences" model="ir.actions.act_window">
+            <field name="name">🚨 Consultations Urgentes</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="domain">[('urgence_detectee', '=', True)]</field>
+            <field name="context">{
+                'search_default_urgences': 1,
+                'search_default_niveau_rouge': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    🎉 Aucune urgence détectée !
+                </p>
+                <p>
+                    Cette vue affiche toutes les consultations nécessitant
+                    une prise en charge urgente ou une surveillance renforcée.
+                </p>
+            </field>
+        </record>
+
+        <!-- Action pour le tableau de bord médical -->
+        <record id="action_salamet_consultation_dashboard" model="ir.actions.act_window">
+            <field name="name">📊 Tableau de Bord Médical</field>
+            <field name="res_model">salamet.consultation</field>
+            <field name="view_mode">kanban,list,form,calendar</field>
+            <field name="context">{
+                'search_default_group_by_alerte': 1,
+                'search_default_this_month': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    📊 Tableau de bord des consultations
+                </p>
+                <p>
+                    Vue d'ensemble des consultations groupées par niveau d'alerte
+                    pour un suivi médical optimal.
+                </p>
+            </field>
+        </record>
+        <!-- Action pour nouvelle consultation -->
+<record id="action_salamet_nouvelle_consultation" model="ir.actions.act_window">
+    <field name="name">Nouvelle Consultation</field>
+    <field name="res_model">salamet.consultation</field>
+    <field name="view_mode">form</field>
+    <field name="target">current</field>
+    <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+            Créer une nouvelle consultation
+        </p>
+        <p>
+            Enregistrez une nouvelle consultation prénatale.
+        </p>
+    </field>
+</record>
+
+
+    </data>
+</odoo>

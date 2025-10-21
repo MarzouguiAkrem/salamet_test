@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- =================== PATIENTE =================== -->
+        <record id="rest_api_salamet_patiente" model="rest.api">
+            <field name="name">SALAMET - Patientes</field>
+            <field name="model_id" ref="model_salamet_patiente"/>
+            <field name="method_get">True</field>
+            <field name="method_post">True</field>
+            <field name="method_put">True</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== GROSSESSE =================== -->
+        <record id="rest_api_salamet_grossesse" model="rest.api">
+            <field name="name">SALAMET - Grossesses</field>
+            <field name="model_id" ref="model_salamet_grossesse"/>
+            <field name="method_get">True</field>
+            <field name="method_post">True</field>
+            <field name="method_put">True</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== CONSULTATION =================== -->
+        <record id="rest_api_salamet_consultation" model="rest.api">
+            <field name="name">SALAMET - Consultations</field>
+            <field name="model_id" ref="model_salamet_consultation"/>
+            <field name="method_get">True</field>
+            <field name="method_post">True</field>
+            <field name="method_put">True</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== BILAN PRÉNATAL =================== -->
+        <record id="rest_api_salamet_bilan" model="rest.api">
+            <field name="name">SALAMET - Bilans Prénataux</field>
+            <field name="model_id" ref="model_salamet_bilan_prenatal"/>
+            <field name="method_get">True</field>
+            <field name="method_post">True</field>
+            <field name="method_put">True</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== ACCOUCHEMENT =================== -->
+        <record id="rest_api_salamet_accouchement" model="rest.api">
+            <field name="name">SALAMET - Accouchements</field>
+            <field name="model_id" ref="model_salamet_accouchement"/>
+            <field name="method_get">True</field>
+            <field name="method_post">True</field>
+            <field name="method_put">True</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== NOTIFICATION =================== -->
+        <record id="rest_api_salamet_notification" model="rest.api">
+            <field name="name">SALAMET - Notifications</field>
+            <field name="model_id" ref="model_salamet_notification"/>
+            <field name="method_get">True</field>
+            <field name="method_post">False</field>
+            <field name="method_put">True</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== MÉDECIN =================== -->
+        <record id="rest_api_salamet_medecin" model="rest.api">
+            <field name="name">SALAMET - Médecins</field>
+            <field name="model_id" ref="model_salamet_medecin"/>
+            <field name="method_get">True</field>
+            <field name="method_post">False</field>
+            <field name="method_put">False</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <!-- =================== EXAMENS DÉTAILLÉS =================== -->
+        <record id="rest_api_salamet_hematologie" model="rest.api">
+            <field name="name">SALAMET - Examens Hématologie</field>
+            <field name="model_id" ref="model_salamet_examen_hematologie"/>
+            <field name="method_get">True</field>
+            <field name="method_post">False</field>
+            <field name="method_put">False</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <record id="rest_api_salamet_biochimie" model="rest.api">
+            <field name="name">SALAMET - Examens Biochimie</field>
+            <field name="model_id" ref="model_salamet_examen_biochimie"/>
+            <field name="method_get">True</field>
+            <field name="method_post">False</field>
+            <field name="method_put">False</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <record id="rest_api_salamet_serologie" model="rest.api">
+            <field name="name">SALAMET - Sérologies</field>
+            <field name="model_id" ref="model_salamet_serologie"/>
+            <field name="method_get">True</field>
+            <field name="method_post">False</field>
+            <field name="method_put">False</field>
+            <field name="method_delete">False</field>
+        </record>
+
+        <record id="rest_api_salamet_echographie" model="rest.api">
+            <field name="name">SALAMET - Échographies</field>
+            <field name="model_id" ref="model_salamet_echographie"/>
+            <field name="method_get">True</field>
+            <field name="method_post">False</field>
+            <field name="method_put">False</field>
+            <field name="method_delete">False</field>
+        </record>
+
+    </data>
+</odoo>

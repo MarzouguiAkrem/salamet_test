@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Tâche cron pour vérifier les grossesses à risque -->
+        <record id="ir_cron_check_grossesses_risque" model="ir.cron">
+            <field name="name">SALAMET: Vérification grossesses à risque</field>
+            <field name="model_id" ref="model_salamet_grossesse"/>
+            <field name="state">code</field>
+            <field name="code">
+# Code à exécuter périodiquement
+# model.check_grossesses_a_risque()
+pass
+            </field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="False"/>
+            <field name="priority">5</field>
+        </record>
+
+        <!-- Tâche cron pour les notifications automatiques -->
+        <record id="ir_cron_notifications_auto" model="ir.cron">
+            <field name="name">SALAMET: Notifications automatiques</field>
+            <field name="model_id" ref="model_salamet_patiente"/>
+            <field name="state">code</field>
+            <field name="code">
+# Code pour les notifications automatiques
+# model.send_automatic_notifications()
+pass
+            </field>
+            <field name="interval_number">6</field>
+            <field name="interval_type">hours</field>
+            <field name="active" eval="False"/>
+            <field name="priority">5</field>
+        </record>
+
+        <!-- Tâche cron pour nettoyer les anciennes données -->
+        <record id="ir_cron_cleanup_old_data" model="ir.cron">
+            <field name="name">SALAMET: Nettoyage données anciennes</field>
+            <field name="model_id" ref="model_salamet_patiente"/>
+            <field name="state">code</field>
+            <field name="code">
+# Code pour nettoyer les anciennes données
+# model.cleanup_old_data()
+pass
+            </field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">weeks</field>
+            <field name="active" eval="False"/>
+            <field name="priority">5</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue formulaire grossesse AMÉLIORÉE -->
+        <record id="view_salamet_grossesse_form" model="ir.ui.view">
+            <field name="name">salamet.grossesse.form</field>
+            <field name="model">salamet.grossesse</field>
+            <field name="arch" type="xml">
+                <form string="Suivi de Grossesse SALAMET">
+                    <header>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="en_cours,a_risque,terminee,interrompue"/>
+
+                        <!-- Boutons d'action -->
+                        <button name="action_nouvelle_consultation" type="object"
+                                string="Nouvelle Consultation" class="btn-primary"
+                                invisible="state not in ['en_cours', 'a_risque']"/>
+                        <button name="action_nouveau_bilan" type="object"
+                                string="Nouveau Bilan" class="btn-secondary"
+                                invisible="state not in ['en_cours', 'a_risque']"/>
+                        <button name="action_generer_notifications_surveillance" type="object"
+                                string="Générer Surveillance" class="btn-warning"
+                                invisible="type_pathologie_principale == 'normale'"/>
+                        <button name="action_marquer_a_risque" type="object"
+                                string="Marquer à Risque" class="btn-danger"
+                                invisible="state != 'en_cours'"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <!-- Smart buttons -->
+                            <button name="action_view_consultations" type="object"
+                                    class="oe_stat_button" icon="fa-stethoscope">
+                                <field name="nombre_consultations" widget="statinfo"
+                                       string="Consultations"/>
+                            </button>
+                            <button name="action_view_bilans" type="object"
+                                    class="oe_stat_button" icon="fa-flask">
+                                <field name="nombre_bilans" widget="statinfo"
+                                       string="Bilans"/>
+                            </button>
+                            <button class="oe_stat_button" icon="fa-exclamation-triangle">
+                                <field name="niveau_risque" widget="statinfo" string="Niveau Risque"/>
+                            </button>
+                        </div>
+
+                        <!-- En-tête avec informations principales -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                            <h2>
+                                <label for="patiente_id" string="Patiente : "/>
+                                <field name="patiente_id"
+                                       readonly="id != False"
+                                       options="{'no_create': True}"/>
+                            </h2>
+                            <div class="o_row">
+                                <span invisible="type_pathologie_principale == 'normale'"
+                                      class="badge badge-warning">
+                                    🏥 <field name="type_pathologie_principale"/>
+                                </span>
+                                <span invisible="niveau_risque != 'tres_eleve'"
+                                      class="badge badge-danger">
+                                    ⚠️ Très haut risque
+                                </span>
+                                <span invisible="niveau_risque != 'eleve'"
+                                      class="badge badge-warning">
+                                    ⚠️ Haut risque
+                                </span>
+                                <span invisible="not tag_display"
+                                      class="badge badge-info">
+                                </span>
+                            </div>
+                        </div>
+
+                        <notebook>
+                            <!-- ONGLET 1: INFORMATIONS GÉNÉRALES -->
+                            <page string="📋 Informations Générales" name="general_info">
+                                <group>
+                                    <group string="📅 Dates et calculs">
+                                        <field name="ddr" required="1"/>
+                                        <field name="date_debut" readonly="1"/>
+                                        <field name="tag_display" readonly="1"/>
+                                        <field name="date_prevue_accouchement" readonly="1"/>
+                                        <field name="terme_actuel" readonly="1"/>
+                                    </group>
+                                    <group string="👨‍⚕️ Suivi Médical">
+                                                                                <field name="medecin_referent_id"
+                                               options="{'no_create': True}"/>
+                                        <field name="medecin_ids" widget="many2many_tags"/>
+                                        <field name="derniere_consultation" readonly="1"/>
+                                        <field name="active"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ONGLET 2: PATHOLOGIES ET RISQUES -->
+                            <page string="🏥 Pathologies et Risques" name="pathologies">
+                                <group>
+                                    <group string="🎯 Pathologie principale">
+                                        <field name="type_pathologie_principale"/>
+                                    </group>
+                                    <group string="💊 Traitement">
+                                        <field name="traitement_pathologie"/>
+                                        <field name="traitement_grossesse"/>
+                                    </group>
+                                </group>
+
+                                <group string="📝 Diagnostic et justification">
+                                    <field name="diagnostic_pathologie" nolabel="1"
+                                           placeholder="Pourquoi ce diagnostic ? Justification médicale..."/>
+                                </group>
+
+                                <group string="💉 Détails du traitement"
+                                       invisible="not traitement_pathologie and not traitement_grossesse">
+                                    <field name="details_traitement_pathologie" nolabel="1"
+                                           placeholder="Préciser le traitement et la posologie..."/>
+                                    <field name="details_traitement" nolabel="1"
+                                           placeholder="Autres traitements au cours de la grossesse..."/>
+                                </group>
+
+                                <group string="🫁 Maturation pulmonaire">
+                                    <field name="maturation_pulmonaire"/>
+                                    <field name="date_maturation_pulmonaire"
+                                           invisible="not maturation_pulmonaire"/>
+                                </group>
+
+                                <!-- Pathologies spécifiques -->
+                                <group string="🏥 Pathologies associées">
+                                    <field name="pathologie_diabete"/>
+                                    <field name="pathologie_hta"/>
+                                    <field name="pathologie_preeclampsie"/>
+                                    <field name="pathologie_rciu"/>
+                                    <field name="pathologie_autre"/>
+                                    <field name="nombre_pathologies" readonly="1"/>
+                                </group>
+
+                                <group string="📋 Autres pathologies">
+                                    <field name="pathologies_associees" nolabel="1"
+                                           placeholder="Lister les autres pathologies associées..."/>
+                                </group>
+                            </page>
+
+                            <!-- ONGLET 3: DONNÉES BIOMÉTRIQUES -->
+                            <page string="📏 Données Biométriques" name="biometric_data">
+                                <group>
+                                    <group string="📊 Mesures initiales">
+                                        <field name="poids_avant_grossesse"/>
+                                        <field name="taille"/>
+                                        <field name="imc_initial" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ONGLET 4: CONSULTATIONS -->
+                            <page string="🩺 Consultations" name="consultations">
+                                <div class="oe_button_box" name="consultation_buttons">
+                                    <button name="action_nouvelle_consultation" type="object"
+                                            string="➕ Nouvelle Consultation" class="btn-primary"
+                                            invisible="state not in ['en_cours', 'a_risque']"/>
+                                </div>
+                                <field name="consultation_ids">
+                                    <list>
+                                        <field name="date_consultation"/>
+                                        <field name="terme_grossesse"/>
+                                        <field name="medecin_id"/>
+                                        <field name="type_consultation"/>
+                                        <field name="observations"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <!-- ONGLET 5: BILANS PRÉNATAUX -->
+                            <page string="🧪 Bilans Prénataux" name="bilans">
+                                <div class="oe_button_box" name="bilan_buttons">
+                                    <button name="action_nouveau_bilan" type="object"
+                                            string="➕ Nouveau Bilan" class="btn-primary"
+                                            invisible="state not in ['en_cours', 'a_risque']"/>
+                                </div>
+                                <field name="bilan_prenatal_ids">
+                                    <list>
+                                        <field name="date_bilan"/>
+                                        <field name="terme_grossesse"/>
+                                        <field name="type_bilan"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <!-- ONGLET 6: NOTIFICATIONS DE SURVEILLANCE -->
+                            <page string="🔔 Surveillance" name="notifications">
+                                <div class="oe_button_box" name="notification_buttons">
+                                    <button name="action_generer_notifications_surveillance" type="object"
+                                            string="🔔 Générer Surveillance" class="btn-warning"
+                                            invisible="type_pathologie_principale == 'normale'"/>
+                                </div>
+                                <field name="notification_ids">
+                                    <kanban>
+                                        <field name="titre"/>
+                                        <field name="date_prevue"/>
+                                        <field name="priorite"/>
+                                        <field name="state"/>
+                                        <field name="type_notification"/>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div class="oe_kanban_card oe_kanban_global_click">
+                                                    <div class="oe_kanban_content">
+                                                        <div class="o_kanban_record_top">
+                                                            <div class="o_kanban_record_headings">
+                                                                <strong class="o_kanban_record_title">
+                                                                    <field name="titre"/>
+                                                                </strong>
+                                                            </div>
+                                                            <div class="o_kanban_record_top_right">
+                                                                <span t-if="record.priorite.raw_value == 'haute'"
+                                                                      class="badge badge-danger">Haute</span>
+                                                                <span t-if="record.priorite.raw_value == 'moyenne'"
+                                                                      class="badge badge-warning">Moyenne</span>
+                                                                <span t-if="record.priorite.raw_value == 'basse'"
+                                                                      class="badge badge-info">Basse</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="o_kanban_record_body">
+                                                            <div>📅 <field name="date_prevue"/></div>
+                                                            <div>🔔 <field name="type_notification"/></div>
+                                                            <div t-if="record.state.raw_value == 'en_attente'">
+                                                                ⏳ En attente
+                                                            </div>
+                                                            <div t-if="record.state.raw_value == 'traitee'">
+                                                                ✅ Traitée
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+
+                            <!-- ONGLET 7: NOTES ET OBSERVATIONS -->
+                            <page string="📝 Notes" name="notes">
+                                <group string="📋 Observations générales">
+                                    <field name="observations" nolabel="1"
+                                           placeholder="Observations générales sur la grossesse..."/>
+                                </group>
+
+                                <group string="📋 Notes médicales">
+                                    <field name="notes_medicales" nolabel="1"
+                                           placeholder="Notes médicales détaillées..."/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue liste grossesses AMÉLIORÉE -->
+        <record id="view_salamet_grossesse_tree" model="ir.ui.view">
+            <field name="name">salamet.grossesse.tree</field>
+            <field name="model">salamet.grossesse</field>
+            <field name="arch" type="xml">
+                <list string="Suivi des Grossesses"
+                      decoration-success="state == 'en_cours' and type_pathologie_principale == 'normale'"
+                      decoration-warning="state == 'a_risque' or niveau_risque == 'eleve'"
+                      decoration-danger="niveau_risque == 'tres_eleve'"
+                      decoration-muted="state in ['terminee', 'interrompue']">
+                    <field name="name"/>
+                    <field name="patiente_id"/>
+                    <field name="ddr"/>
+                    <field name="tag_display"/>
+                    <field name="tag_semaines"/>
+                    <field name="tag_jours"/>
+                    <field name="date_prevue_accouchement"/>
+                    <field name="type_pathologie_principale"/>
+                    <field name="niveau_risque" widget="badge"
+                           decoration-success="niveau_risque == 'faible'"
+                           decoration-info="niveau_risque == 'moyen'"
+                           decoration-warning="niveau_risque == 'eleve'"
+                           decoration-danger="niveau_risque == 'tres_eleve'"/>
+                    <field name="medecin_referent_id"/>
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'en_cours'"
+                           decoration-warning="state == 'a_risque'"
+                           decoration-info="state == 'terminee'"
+                           decoration-muted="state == 'interrompue'"/>
+                    <field name="derniere_consultation"/>
+                    <field name="nombre_consultations"/>
+                    <field name="nombre_bilans"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue Kanban grossesses -->
+        <record id="view_salamet_grossesse_kanban" model="ir.ui.view">
+            <field name="name">salamet.grossesse.kanban</field>
+            <field name="model">salamet.grossesse</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_small_column">
+                    <field name="name"/>
+                    <field name="patiente_id"/>
+                    <field name="tag_display"/>
+                    <field name="tag_semaines"/>
+                    <field name="tag_jours"/>
+                    <field name="date_prevue_accouchement"/>
+                    <field name="type_pathologie_principale"/>
+                    <field name="niveau_risque"/>
+                    <field name="medecin_referent_id"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="patiente_id"/>
+                                            </strong>
+                                            <small class="o_kanban_record_subtitle text-muted">
+                                                <field name="name"/>
+                                            </small>
+                                        </div>
+                                        <div class="o_kanban_record_top_right">
+                                            <span t-if="record.niveau_risque.raw_value == 'tres_eleve'"
+                                                  class="badge badge-danger">⚠️</span>
+                                            <span t-if="record.niveau_risque.raw_value == 'eleve'"
+                                                  class="badge badge-warning">⚠️</span>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <div>⏱️ TAG: <t t-esc="record.tag_display.value"/></div>
+                                        <div>🍼 DPA: <t t-esc="record.date_prevue_accouchement.value"/></div>
+                                        <div>🏥 <t t-esc="record.type_pathologie_principale.value"/></div>
+                                        <div t-if="record.medecin_referent_id.raw_value">
+                                            👨‍⚕️ <t t-esc="record.medecin_referent_id.value"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+       <!-- Vue recherche grossesses CORRIGÉE -->
+<!-- Vue recherche grossesses CORRIGÉE -->
+<record id="view_salamet_grossesse_search" model="ir.ui.view">
+    <field name="name">salamet.grossesse.search</field>
+    <field name="model">salamet.grossesse</field>
+    <field name="arch" type="xml">
+        <search string="Rechercher Grossesses">
+            <field name="name" string="Référence"/>
+            <field name="patiente_id" string="Patiente"/>
+            <field name="medecin_referent_id" string="Médecin référent"/>
+            <field name="type_pathologie_principale"/>
+            <field name="tag_display" string="TAG"/>
+
+            <!-- Filtres principaux -->
+            <filter string="En cours" name="en_cours"
+                    domain="[('state', '=', 'en_cours')]"/>
+            <filter string="À risque" name="a_risque"
+                    domain="[('state', '=', 'a_risque')]"/>
+            <filter string="Pathologiques" name="pathologiques"
+                    domain="[('type_pathologie_principale', '!=', 'normale')]"/>
+            <filter string="Normales" name="normales"
+                    domain="[('type_pathologie_principale', '=', 'normale')]"/>
+
+            <separator/>
+
+            <!-- Filtres par niveau de risque -->
+            <filter string="Très haut risque" name="tres_haut_risque"
+                    domain="[('niveau_risque', '=', 'tres_eleve')]"/>
+            <filter string="Haut risque" name="haut_risque"
+                    domain="[('niveau_risque', '=', 'eleve')]"/>
+            <filter string="Risque moyen" name="risque_moyen"
+                    domain="[('niveau_risque', '=', 'moyen')]"/>
+            <filter string="Faible risque" name="faible_risque"
+                    domain="[('niveau_risque', '=', 'faible')]"/>
+
+            <separator/>
+
+            <!-- Filtres par pathologie -->
+            <filter string="Diabète" name="diabete"
+                    domain="[('type_pathologie_principale', 'in', ['diabete_equilibre', 'diabete_insuline'])]"/>
+            <filter string="HTA/Prééclampsie" name="hta"
+                    domain="[('type_pathologie_principale', 'in', ['htac', 'htag', 'preeclampsie_legere', 'preeclampsie_moderee', 'preeclampsie_severe'])]"/>
+            <filter string="RCIU" name="rciu"
+                    domain="[('type_pathologie_principale', '=', 'rciu')]"/>
+            <filter string="Maturation pulmonaire" name="maturation"
+                    domain="[('maturation_pulmonaire', '=', True)]"/>
+
+            <separator/>
+
+            <!-- Filtres par terme CORRIGÉS -->
+            <filter string="Terme proche (37+ SA)" name="terme_proche" domain="[('tag_semaines', '&gt;=', 37)]"/>
+            <filter string="Prématuré (moins de 37 SA)" name="premature" domain="[('tag_semaines', '&lt;', 37), ('state', 'in', ['en_cours', 'a_risque'])]"/>
+            <filter string="Grand prématuré (moins de 32 SA)" name="grand_premature" domain="[('tag_semaines', '&lt;', 32), ('state', 'in', ['en_cours', 'a_risque'])]"/>
+            <filter string="1er trimestre (moins de 14 SA)" name="premier_trimestre" domain="[('tag_semaines', '&lt;', 14), ('state', 'in', ['en_cours', 'a_risque'])]"/>
+            <filter string="2ème trimestre (14-28 SA)" name="deuxieme_trimestre" domain="[('tag_semaines', '&gt;=', 14), ('tag_semaines', '&lt;', 28), ('state', 'in', ['en_cours', 'a_risque'])]"/>
+            <filter string="3ème trimestre (28+ SA)" name="troisieme_trimestre" domain="[('tag_semaines', '&gt;=', 28), ('state', 'in', ['en_cours', 'a_risque'])]"/>
+
+            <group expand="0" string="Grouper par">
+                <filter string="État" name="group_by_state"
+                        context="{'group_by': 'state'}"/>
+                <filter string="Pathologie" name="group_by_pathologie"
+                        context="{'group_by': 'type_pathologie_principale'}"/>
+                <filter string="Niveau de risque" name="group_by_risk"
+                        context="{'group_by': 'niveau_risque'}"/>
+                <filter string="Médecin référent" name="group_by_medecin"
+                        context="{'group_by': 'medecin_referent_id'}"/>
+                <filter string="Mois DPA" name="group_by_dpa_month"
+                        context="{'group_by': 'date_prevue_accouchement:month'}"/>
+                <filter string="Trimestre" name="group_by_trimestre"
+                        context="{'group_by': 'tag_semaines'}"/>
+            </group>
+        </search>
+    </field>
+</record>
+
+        <!-- Action pour le menu -->
+        <record id="action_salamet_grossesse" model="ir.actions.act_window">
+            <field name="name">Suivi des Grossesses</field>
+            <field name="res_model">salamet.grossesse</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{
+                'search_default_en_cours': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer le premier suivi de grossesse
+                </p>
+                <p>
+                    Le module SALAMET vous permet de suivre les grossesses de vos patientes
+                    avec un système de surveillance automatisé selon les pathologies.
+                </p>
+                <p>
+                    <strong>TAG (Terme d'Aménorrhée Gestationnel)</strong> : Calculé automatiquement au format médical (ex: 36SA+3j)
+                </p>
+            </field>
+        </record>
+
+        <!-- Action pour nouvelle grossesse -->
+        <record id="action_salamet_nouvelle_grossesse" model="ir.actions.act_window">
+            <field name="name">Nouvelle Grossesse</field>
+            <field name="res_model">salamet.grossesse</field>
+            <field name="view_mode">form</field>
+            <field name="target">current</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer une nouvelle grossesse
+                </p>
+                <p>
+                    Enregistrez une nouvelle grossesse pour le suivi médical.
+                    Le TAG sera calculé automatiquement à partir de la DDR.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+

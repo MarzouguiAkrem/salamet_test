@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire pour l'assistant de notifications -->
+    <record id="view_salamet_notification_wizard_form" model="ir.ui.view">
+        <field name="name">salamet.notification.wizard.form</field>
+        <field name="model">salamet.notification.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Créer des notifications">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Assistant de création de notifications</h1>
+                    </div>
+
+                    <group>
+                        <group string="Sélection des patientes">
+                            <field name="patiente_ids" widget="many2many_tags"/>
+                            <field name="grossesse_ids" widget="many2many_tags"/>
+                        </group>
+
+                        <group string="Filtres automatiques">
+                            <field name="filtre_terme_min"/>
+                            <field name="filtre_terme_max"/>
+                            <field name="filtre_niveau_risque"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Type et contenu">
+                            <field name="type_notification"/>
+                            <field name="titre"/>
+                            <field name="message" widget="text"/>
+                        </group>
+
+                        <group string="Priorité et planification">
+                            <field name="priorite"/>
+                            <field name="date_prevue"/>
+                            <field name="medecin_responsable_id"/>
+                        </group>
+                    </group>
+
+                    <group string="Récurrence">
+                        <field name="recurrence"/>
+                        <field name="intervalle_recurrence" invisible="recurrence == False" required="recurrence == True"/>
+                        <field name="nombre_recurrence" invisible="recurrence == False" required="recurrence == True"/>
+                        <field name="fin_recurrence" invisible="recurrence == False" required="recurrence == True"/>
+                    </group>
+
+                    <group string="Options d'envoi">
+                        <field name="envoyer_email"/>
+                        <field name="envoyer_sms"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_creer_notifications" string="Créer les notifications"
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue formulaire pour l'assistant de traitement de notification -->
+    <record id="view_salamet_notification_traitement_wizard_form" model="ir.ui.view">
+        <field name="name">salamet.notification.traitement.wizard.form</field>
+        <field name="model">salamet.notification.traitement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Traiter la notification">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Traitement de la notification</h1>
+                    </div>
+
+                    <group>
+                        <field name="notification_id" readonly="1"/>
+                    </group>
+
+                    <group>
+                        <group string="Résultat du traitement">
+                            <field name="resultat_action" widget="text"/>
+                            <field name="observations" widget="text"/>
+                        </group>
+
+                        <group string="Actions à créer">
+                            <field name="creer_consultation"/>
+                            <field name="creer_bilan"/>
+                        </group>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_traiter" string="Traiter"
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue formulaire pour l'assistant de report de notification -->
+    <record id="view_salamet_notification_report_wizard_form" model="ir.ui.view">
+        <field name="name">salamet.notification.report.wizard.form</field>
+        <field name="model">salamet.notification.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reporter la notification">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Reporter la notification</h1>
+                    </div>
+
+                    <group>
+                        <field name="notification_id" readonly="1"/>
+                    </group>
+
+                    <group>
+                        <field name="nouvelle_date"/>
+                        <field name="motif_report" widget="text"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_reporter" string="Reporter"
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue formulaire pour l'assistant d'interprétation de bilan -->
+    <record id="view_salamet_bilan_interpretation_wizard_form" model="ir.ui.view">
+        <field name="name">salamet.bilan.interpretation.wizard.form</field>
+        <field name="model">salamet.bilan.interpretation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Interprétation du bilan">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Interprétation du bilan prénatal</h1>
+                        <h2><field name="bilan_id" readonly="1"/></h2>
+                    </div>
+
+                    <group>
+                        <group string="Analyse automatique">
+                            <field name="interpretation_auto" widget="text" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Interprétation médicale">
+                            <field name="interpretation_medicale" widget="text"/>
+                            <field name="recommandations" widget="text"/>
+                            <field name="niveau_alerte"/>
+                        </group>
+
+                        <group string="Actions à entreprendre">
+                            <field name="consultation_urgente"/>
+                            <field name="hospitalisation"/>
+                            <field name="bilan_complementaire"/>
+                        </group>
+                    </group>
+
+                    <group string="Planification du suivi">
+                        <field name="prochain_bilan"/>
+                        <field name="prochain_rdv"/>
+                    </group>
+                </sheet>
+
+                <footer>
+                    <button name="action_valider_interpretation" string="Valider l'interprétation"
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions pour les assistants -->
+    <record id="action_salamet_notification_wizard" model="ir.actions.act_window">
+        <field name="name">Créer des notifications</field>
+        <field name="res_model">salamet.notification.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_salamet_bilan_interpretation_wizard" model="ir.actions.act_window">
+        <field name="name">Interpréter le bilan</field>
+        <field name="res_model">salamet.bilan.interpretation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

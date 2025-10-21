@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template pour le rapport de grossesse -->
+    <template id="report_grossesse_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="grossesse">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- En-tête du rapport -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h2 class="text-center">
+                                    <strong>DOSSIER DE GROSSESSE</strong>
+                                </h2>
+                                <h3 class="text-center text-muted">
+                                    Système SALAMET - Surveillance et Alerte Maternité
+                                </h3>
+                            </div>
+                        </div>
+
+                        <br/>
+
+                        <!-- Informations patiente -->
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>INFORMATIONS PATIENTE</strong>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Nom :</strong></td>
+                                        <td><span t-field="grossesse.patiente_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date de naissance :</strong></td>
+                                        <td><span t-field="grossesse.patiente_id.date_naissance"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Âge :</strong></td>
+                                        <td><span t-field="grossesse.patiente_id.age"/> ans</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Téléphone :</strong></td>
+                                        <td><span t-field="grossesse.patiente_id.telephone"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Adresse :</strong></td>
+                                        <td><span t-field="grossesse.patiente_id.adresse"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="col-6">
+                                <strong>INFORMATIONS GROSSESSE</strong>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>DDR :</strong></td>
+                                        <td><span t-field="grossesse.date_derniere_regles"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>DPA :</strong></td>
+                                        <td><span t-field="grossesse.date_prevue_accouchement"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Terme actuel :</strong></td>
+                                        <td><span t-field="grossesse.terme_actuel"/> SA</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Gestité :</strong></td>
+                                        <td><span t-field="grossesse.gestite"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Parité :</strong></td>
+                                        <td><span t-field="grossesse.parite"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Niveau de risque :</strong></td>
+                                        <td>
+                                            <span t-field="grossesse.niveau_risque"
+                                                  t-options="{'widget': 'badge'}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Antécédents -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>ANTÉCÉDENTS</strong>
+                                <table class="table table-sm table-bordered">
+                                    <tr>
+                                        <td><strong>Médicaux :</strong></td>
+                                        <td><span t-field="grossesse.antecedents_medicaux"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Chirurgicaux :</strong></td>
+                                        <td><span t-field="grossesse.antecedents_chirurgicaux"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Obstétricaux :</strong></td>
+                                        <td><span t-field="grossesse.antecedents_obstetricaux"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Familiaux :</strong></td>
+                                        <td><span t-field="grossesse.antecedents_familiaux"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Consultations -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>CONSULTATIONS</strong>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr class="table-active">
+                                            <th>Date</th>
+                                            <th>Terme</th>
+                                            <th>Type</th>
+                                            <th>Médecin</th>
+                                            <th>Poids</th>
+                                            <th>TA</th>
+                                            <th>Observations</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="grossesse.consultation_ids" t-as="consultation">
+                                            <tr>
+                                                <td><span t-field="consultation.date_consultation"/></td>
+                                                <td><span t-field="consultation.terme_consultation"/> SA</td>
+                                                <td><span t-field="consultation.type_consultation"/></td>
+                                                <td><span t-field="consultation.medecin_id.name"/></td>
+                                                <td><span t-field="consultation.poids_patiente"/> kg</td>
+                                                <td>
+                                                    <span t-field="consultation.tension_arterielle_systolique"/>
+                                                    / <span t-field="consultation.tension_arterielle_diastolique"/>
+                                                </td>
+                                                <td><span t-field="consultation.observations"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Bilans prénataux -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>BILANS PRÉNATAUX</strong>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr class="table-active">
+                                            <th>Date</th>
+                                            <th>Terme</th>
+                                            <th>Type</th>
+                                            <th>Hb</th>
+                                            <th>Glycémie</th>
+                                            <th>Protéinurie</th>
+                                            <th>Sérologies</th>
+                                            <th>Interprétation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="grossesse.bilan_ids" t-as="bilan">
+                                            <tr>
+                                                <td><span t-field="bilan.date_bilan"/></td>
+                                                <td><span t-field="bilan.terme_grossesse"/> SA</td>
+                                                <td><span t-field="bilan.type_bilan"/></td>
+                                                <td><span t-field="bilan.hemoglobine"/> g/dL</td>
+                                                <td><span t-field="bilan.glycemie"/> g/L</td>
+                                                <td><span t-field="bilan.proteinurie"/> g/24h</td>
+                                                <td>
+                                                    <t t-if="bilan.toxoplasmose_igm == 'positive'">Toxo+</t>
+                                                    <t t-if="bilan.cmv_igm == 'positive'">CMV+</t>
+                                                    <t t-if="bilan.hbsag == 'positive'">HBs+</t>
+                                                    <t t-if="bilan.vih == 'positive'">VIH+</t>
+                                                </td>
+                                                <td><span t-field="bilan.interpretation"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Échographies -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>ÉCHOGRAPHIES</strong>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr class="table-active">
+                                            <th>Date</th>
+                                            <th>Terme</th>
+                                            <th>Type</th>
+                                            <th>BIP</th>
+                                            <th>PC</th>
+                                            <th>PA</th>
+                                            <th>LF</th>
+                                            <th>EPF</th>
+                                            <th>Conclusion</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="grossesse.echographie_ids" t-as="echo">
+                                            <tr>
+                                                <td><span t-field="echo.date_echo"/></td>
+                                                <td><span t-field="echo.terme_echo"/> SA</td>
+                                                <td><span t-field="echo.type_echo"/></td>
+                                                <td><span t-field="echo.bip"/> mm</td>
+                                                <td><span t-field="echo.pc"/> mm</td>
+                                                <td><span t-field="echo.pa"/> mm</td>
+                                                <td><span t-field="echo.lf"/> mm</td>
+                                                <td><span t-field="echo.efw"/> g</td>
+                                                <td><span t-field="echo.conclusion"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Notifications et alertes -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>NOTIFICATIONS ET ALERTES</strong>
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr class="table-active">
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Priorité</th>
+                                            <th>Titre</th>
+                                            <th>Message</th>
+                                            <th>État</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="grossesse.notification_ids" t-as="notif">
+                                            <tr>
+                                                <td><span t-field="notif.date_prevue"/></td>
+                                                <td><span t-field="notif.type_notification"/></td>
+                                                <td>
+                                                    <span t-field="notif.priorite"
+                                                          t-options="{'widget': 'badge'}"/>
+                                                </td>
+                                                <td><span t-field="notif.titre"/></td>
+                                                <td><span t-field="notif.message"/></td>
+                                                <td><span t-field="notif.state"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Pied de page -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p><strong>Médecin responsable :</strong></p>
+                                <p><span t-field="grossesse.medecin_referent_id.name"/></p>
+                                <p>Signature : ________________________</p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p><strong>Date d'édition :</strong></p>
+                                <p><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Rapport de grossesse -->
+    <record id="action_report_grossesse" model="ir.actions.report">
+        <field name="name">Dossier de grossesse</field>
+        <field name="model">salamet.grossesse</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">salamet.report_grossesse_template</field>
+        <field name="report_file">salamet.report_grossesse_template</field>
+        <field name="binding_model_id" ref="model_salamet_grossesse"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Template pour le rapport de consultation -->
+    <template id="report_consultation_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="consultation">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h2><strong>COMPTE-RENDU DE CONSULTATION</strong></h2>
+                                <h3 class="text-muted">Système SALAMET</h3>
+                            </div>
+                        </div>
+
+                        <br/>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>PATIENTE</strong>
+                                <p><span t-field="consultation.patiente_id.name"/></p>
+                                <p>Née le : <span t-field="consultation.patiente_id.date_naissance"/></p>
+                                <p>Tél : <span t-field="consultation.patiente_id.telephone"/></p>
+                            </div>
+                            <div class="col-6">
+                                <strong>CONSULTATION</strong>
+                                <p>Date : <span t-field="consultation.date_consultation"/></p>
+                                <p>Médecin : <span t-field="consultation.medecin_id.name"/></p>
+                                <p>Type : <span t-field="consultation.type_consultation"/></p>
+                                <p>Terme : <span t-field="consultation.terme_consultation"/> SA</p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>EXAMEN CLINIQUE</strong>
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td><strong>Poids :</strong></td>
+                                        <td><span t-field="consultation.poids_patiente"/> kg</td>
+                                        <td><strong>Prise de poids :</strong></td>
+                                        <td><span t-field="consultation.prise_poids_total"/> kg</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tension artérielle :</strong></td>
+                                        <td colspan="3">
+                                            <span t-field="consultation.tension_arterielle_systolique"/> /
+                                            <span t-field="consultation.tension_arterielle_diastolique"/> mmHg
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Hauteur utérine :</strong></td>
+                                        <td><span t-field="consultation.hauteur_uterine"/> cm</td>
+                                        <td><strong>Présentation :</strong></td>
+                                        <td><span t-field="consultation.presentation_foetale"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>BCF :</strong></td>
+                                        <td><span t-field="consultation.bcf"/> bpm</td>
+                                                                                <td><strong>MAF :</strong></td>
+                                        <td><span t-field="consultation.maf"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Œdèmes :</strong></td>
+                                        <td><span t-field="consultation.oedemes"/></td>
+                                        <td><strong>Protéinurie :</strong></td>
+                                        <td><span t-field="consultation.proteinurie_bandelette"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>OBSERVATIONS</strong>
+                                <p><span t-field="consultation.observations"/></p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>DIAGNOSTIC</strong>
+                                <p><span t-field="consultation.diagnostic"/></p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>CONDUITE À TENIR</strong>
+                                <p><span t-field="consultation.conduite_tenir"/></p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>PRESCRIPTIONS</strong>
+                                <t t-foreach="consultation.prescription_ids" t-as="prescription">
+                                    <p>• <span t-field="prescription.medicament"/> - <span t-field="prescription.posologie"/></p>
+                                </t>
+                            </div>
+                            <div class="col-6">
+                                <strong>EXAMENS DEMANDÉS</strong>
+                                <t t-foreach="consultation.examen_ids" t-as="examen">
+                                    <p>• <span t-field="examen.type_examen"/> - <span t-field="examen.indication"/></p>
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p><strong>Prochain RDV :</strong></p>
+                                <p><span t-field="consultation.prochain_rdv"/></p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p><strong>Signature du médecin</strong></p>
+                                <br/><br/>
+                                <p>Dr. <span t-field="consultation.medecin_id.name"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Rapport de consultation -->
+    <record id="action_report_consultation" model="ir.actions.report">
+        <field name="name">Compte-rendu de consultation</field>
+        <field name="model">salamet.consultation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">salamet.report_consultation_template</field>
+        <field name="report_file">salamet.report_consultation_template</field>
+        <field name="binding_model_id" ref="model_salamet_consultation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Template pour le rapport de bilan prénatal -->
+    <template id="report_bilan_prenatal_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="bilan">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h2><strong>RÉSULTATS DE BILAN PRÉNATAL</strong></h2>
+                                <h3 class="text-muted">Système SALAMET</h3>
+                            </div>
+                        </div>
+
+                        <br/>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>PATIENTE</strong>
+                                <p><span t-field="bilan.patiente_id.name"/></p>
+                                <p>Née le : <span t-field="bilan.patiente_id.date_naissance"/></p>
+                            </div>
+                            <div class="col-6">
+                                <strong>BILAN</strong>
+                                <p>Date : <span t-field="bilan.date_bilan"/></p>
+                                <p>Terme : <span t-field="bilan.terme_grossesse"/> SA</p>
+                                <p>Type : <span t-field="bilan.type_bilan"/></p>
+                                <p>Médecin : <span t-field="bilan.medecin_id.name"/></p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>HÉMATOLOGIE</strong>
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td><strong>Hémoglobine :</strong></td>
+                                        <td><span t-field="bilan.hemoglobine"/> g/dL</td>
+                                        <td><strong>Hématocrite :</strong></td>
+                                        <td><span t-field="bilan.hematocrite"/> %</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Plaquettes :</strong></td>
+                                        <td><span t-field="bilan.plaquettes"/> /mm³</td>
+                                        <td><strong>Leucocytes :</strong></td>
+                                        <td><span t-field="bilan.leucocytes"/> /mm³</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>BIOCHIMIE</strong>
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td><strong>Glycémie :</strong></td>
+                                        <td><span t-field="bilan.glycemie"/> g/L</td>
+                                        <td><strong>HGPO :</strong></td>
+                                        <td><span t-field="bilan.hgpo"/> g/L</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Créatinine :</strong></td>
+                                        <td><span t-field="bilan.creatinine"/> mg/L</td>
+                                        <td><strong>Protéinurie :</strong></td>
+                                        <td><span t-field="bilan.proteinurie"/> g/24h</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Albuminurie :</strong></td>
+                                        <td><span t-field="bilan.albuminurie"/> mg/L</td>
+                                        <td><strong>ECBU :</strong></td>
+                                        <td><span t-field="bilan.ecbu"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>SÉROLOGIES</strong>
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <td><strong>Toxoplasmose IgG :</strong></td>
+                                        <td><span t-field="bilan.toxoplasmose_igg"/></td>
+                                        <td><strong>Toxoplasmose IgM :</strong></td>
+                                        <td><span t-field="bilan.toxoplasmose_igm"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>CMV IgG :</strong></td>
+                                        <td><span t-field="bilan.cmv_igg"/></td>
+                                        <td><strong>CMV IgM :</strong></td>
+                                        <td><span t-field="bilan.cmv_igm"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Rubéole IgG :</strong></td>
+                                        <td><span t-field="bilan.rubeole_igg"/></td>
+                                        <td><strong>Rubéole IgM :</strong></td>
+                                        <td><span t-field="bilan.rubeole_igm"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>HBsAg :</strong></td>
+                                        <td><span t-field="bilan.hbsag"/></td>
+                                        <td><strong>VIH :</strong></td>
+                                        <td><span t-field="bilan.vih"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Syphilis :</strong></td>
+                                        <td><span t-field="bilan.syphilis"/></td>
+                                        <td><strong>Streptocoque B :</strong></td>
+                                        <td><span t-field="bilan.streptocoque_b"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>INTERPRÉTATION</strong>
+                                <p><span t-field="bilan.interpretation"/></p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <strong>RECOMMANDATIONS</strong>
+                                <p><span t-field="bilan.recommandations"/></p>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <t t-if="bilan.niveau_alerte != 'aucune'">
+                                    <div class="alert alert-warning">
+                                        <strong>NIVEAU D'ALERTE : </strong>
+                                        <span t-field="bilan.niveau_alerte"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p><strong>Signature du médecin</strong></p>
+                                <br/><br/>
+                                <p>Dr. <span t-field="bilan.medecin_id.name"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Rapport de bilan prénatal -->
+    <record id="action_report_bilan_prenatal" model="ir.actions.report">
+        <field name="name">Résultats de bilan prénatal</field>
+        <field name="model">salamet.bilan.prenatal</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">salamet.report_bilan_prenatal_template</field>
+        <field name="report_file">salamet.report_bilan_prenatal_template</field>
+        <field name="binding_model_id" ref="model_salamet_bilan_prenatal"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Template pour le rapport statistique -->
+    <template id="report_statistiques_template">
+        <t t-call="web.html_container">
+            <div class="page">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <h2><strong>RAPPORT STATISTIQUE SALAMET</strong></h2>
+                        <h3 class="text-muted">Période : <span t-esc="date_debut"/> - <span t-esc="date_fin"/></h3>
+                    </div>
+                </div>
+
+                <br/>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>ACTIVITÉ GÉNÉRALE</strong>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Nouvelles grossesses :</td>
+                                        <td><strong><span t-esc="stats['nouvelles_grossesses']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Consultations :</td>
+                                        <td><strong><span t-esc="stats['consultations']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Bilans prénataux :</td>
+                                        <td><strong><span t-esc="stats['bilans']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Échographies :</td>
+                                        <td><strong><span t-esc="stats['echographies']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Accouchements :</td>
+                                        <td><strong><span t-esc="stats['accouchements']"/></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>NIVEAUX DE RISQUE</strong>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Risque faible :</td>
+                                        <td><strong><span t-esc="stats['risque_faible']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Risque modéré :</td>
+                                        <td><strong><span t-esc="stats['risque_modere']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Risque élevé :</td>
+                                        <td><strong><span t-esc="stats['risque_eleve']"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Risque critique :</td>
+                                        <td><strong><span t-esc="stats['risque_critique']"/></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>ALERTES ET NOTIFICATIONS</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="text-center">
+                                            <h4 class="text-danger"><span t-esc="stats['alertes_critiques']"/></h4>
+                                            <small>Alertes critiques</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-center">
+                                            <h4 class="text-warning"><span t-esc="stats['alertes_hautes']"/></h4>
+                                            <small>Alertes hautes</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-center">
+                                            <h4 class="text-info"><span t-esc="stats['notifications_total']"/></h4>
+                                            <small>Total notifications</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-center">
+                                            <h4 class="text-success"><span t-esc="stats['notifications_traitees']"/></h4>
+                                            <small>Notifications traitées</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>PATHOLOGIES DÉTECTÉES</strong>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr class="table-active">
+                                            <th>Pathologie</th>
+                                            <th>Nombre de cas</th>
+                                            <th>Pourcentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="stats['pathologies']" t-as="pathologie">
+                                            <tr>
+                                                <td><span t-esc="pathologie['nom']"/></td>
+                                                <td><span t-esc="pathologie['nombre']"/></td>
+                                                <td><span t-esc="pathologie['pourcentage']"/>%</td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-12 text-right">
+                        <p><strong>Rapport généré le :</strong></p>
+                        <p><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
+
+

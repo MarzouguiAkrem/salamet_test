@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue formulaire notification AMÉLIORÉE -->
+        <record id="view_salamet_notification_form" model="ir.ui.view">
+            <field name="name">salamet.notification.form</field>
+            <field name="model">salamet.notification</field>
+            <field name="arch" type="xml">
+                <form string="Notification SALAMET">
+                    <header>
+                        <!-- Alertes visuelles selon priorité -->
+                        <div class="alert alert-danger" role="alert"
+                             invisible="priorite != 'critique'">
+                            🚨 <strong>PRIORITÉ CRITIQUE</strong> - Action immédiate requise
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="priorite != 'haute'">
+                            ⚠️ <strong>PRIORITÉ HAUTE</strong> - Action urgente requise
+                        </div>
+                        <div class="alert alert-info" role="alert"
+                             invisible="jours_restants >= 0">
+                            ⏰ <strong>NOTIFICATION EN RETARD</strong>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <button name="action_marquer_vue" type="object"
+                                string="👁️ Marquer comme vue" class="btn-info"
+                                invisible="state != 'en_attente'"/>
+                        <button name="action_marquer_traitee" type="object"
+                                string="✅ Traiter" class="btn-success"
+                                invisible="state not in ['en_attente', 'vue']"/>
+                        <button name="action_reporter" type="object"
+                                string="📅 Reporter" class="btn-warning"
+                                invisible="state not in ['en_attente', 'vue']"/>
+                        <button name="action_annuler" type="object"
+                                string="❌ Annuler" class="btn-secondary"
+                                invisible="state not in ['en_attente', 'vue', 'reportee']"/>
+                        <button name="action_creer_consultation" type="object"
+                                string="🩺 Créer Consultation" class="btn-primary"
+                                invisible="type_notification != 'rappel_consultation'"/>
+                        <button name="action_creer_bilan" type="object"
+                                string="🧪 Créer Bilan" class="btn-primary"
+                                invisible="type_notification != 'rappel_bilan'"/>
+
+                        <!-- Statut -->
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="en_attente,vue,traitee"/>
+                    </header>
+
+                    <sheet>
+                        <!-- En-tête avec informations principales -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="titre"/>
+                            </h1>
+                            <div class="o_row">
+                                <span invisible="priorite != 'critique'" class="badge badge-danger">
+                                    🚨 Critique
+                                </span>
+                                <span invisible="priorite != 'haute'" class="badge badge-warning">
+                                    ⚠️ Haute
+                                </span>
+                                <span invisible="priorite != 'moyenne'" class="badge badge-info">
+                                    ℹ️ Moyenne
+                                </span>
+                                <span invisible="priorite != 'basse'" class="badge badge-secondary">
+                                    📝 Basse
+                                </span>
+                                <span invisible="automatique != True" class="badge badge-light">
+                                    🤖 Automatique
+                                </span>
+                                <span invisible="recurrente != True" class="badge badge-primary">
+                                    🔄 Récurrente
+                                </span>
+                            </div>
+                        </div>
+
+                        <group>
+                           <group string="👤 Patiente et grossesse">
+    <!-- Modifiable lors de la création, readonly après sauvegarde -->
+    <field name="grossesse_id"
+           readonly="state in ['traitee', 'annulee'] or id != False"
+           domain="[('patiente_id', '=', patiente_id), ('state', '=', 'en_cours')]"
+           options="{'no_create': True}"
+           required="1"/>
+    <field name="medecin_responsable_id" options="{'no_create': True}"/>
+    <field name="consultation_id" readonly="1"/>
+</group>
+
+                            <group string="📅 Dates et timing">
+                                <field name="date_creation" readonly="1"/>
+                                <field name="date_prevue"/>
+                                <field name="date_echeance" readonly="1"/>
+                               <field name="jours_restants" readonly="1"
+       decoration-success="jours_restants &gt; 3"
+       decoration-warning="jours_restants &gt;= 0 and jours_restants &lt;= 3"
+       decoration-danger="jours_restants &lt; 0"/>
+                                <field name="date_traitement" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="🔔 Type et priorité">
+                                <field name="type_notification"/>
+                                <field name="priorite" widget="badge"
+                                       decoration-danger="priorite == 'critique'"
+                                       decoration-warning="priorite == 'haute'"
+                                       decoration-info="priorite == 'moyenne'"
+                                       decoration-muted="priorite == 'basse'"/>
+                            </group>
+                            <group string="🔄 Récurrence">
+                                <field name="recurrente" widget="boolean_toggle"/>
+                                <field name="frequence_recurrence"
+                                       invisible="recurrente != True"/>
+                                <field name="automatique" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group string="💬 Message">
+                            <field name="message" nolabel="1"/>
+                        </group>
+
+                        <group string="📋 Actions requises" invisible="actions_requises == False">
+                            <field name="actions_requises" nolabel="1"/>
+                        </group>
+
+                        <group string="📝 Observations" invisible="observations == False">
+                            <field name="observations" nolabel="1"/>
+                        </group>
+
+                        <group string="✅ Résultat de l'action"
+                               invisible="resultat_action == False">
+                            <field name="resultat_action" nolabel="1" readonly="1"/>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue liste notifications AMÉLIORÉE -->
+        <record id="view_salamet_notification_tree" model="ir.ui.view">
+            <field name="name">salamet.notification.tree</field>
+            <field name="model">salamet.notification</field>
+            <field name="arch" type="xml">
+               <list string="Notifications SALAMET"
+      decoration-danger="priorite == 'critique' or jours_restants &lt; 0"
+      decoration-warning="priorite == 'haute'"
+      decoration-info="priorite == 'moyenne'"
+      decoration-muted="state in ['traitee', 'annulee']"
+      decoration-bf="state == 'en_attente'">
+                    <field name="date_prevue"/>
+                    <field name="titre"/>
+                    <field name="patiente_id"/>
+                    <field name="type_notification"/>
+                    <field name="priorite" widget="badge"
+                           decoration-danger="priorite == 'critique'"
+                           decoration-warning="priorite == 'haute'"
+                           decoration-info="priorite == 'moyenne'"
+                           decoration-muted="priorite == 'basse'"/>
+                    <field name="medecin_responsable_id"/>
+                    <field name="jours_restants"
+       decoration-success="jours_restants &gt; 3"
+       decoration-warning="jours_restants &gt;= 0 and jours_restants &lt;= 3"
+       decoration-danger="jours_restants &lt; 0"/>
+                    <field name="state" widget="badge"
+                           decoration-muted="state == 'en_attente'"
+                           decoration-info="state == 'vue'"
+                           decoration-success="state == 'traitee'"
+                           decoration-warning="state == 'reportee'"
+                           decoration-danger="state == 'annulee'"/>
+
+                    <!-- Boutons d'action rapide -->
+                    <button name="action_marquer_vue" type="object"
+                            string="👁️" title="Marquer comme vue"
+                            invisible="state != 'en_attente'"/>
+                    <button name="action_marquer_traitee" type="object"
+                            string="✅" title="Traiter"
+                            invisible="state not in ['en_attente', 'vue']"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue Kanban notifications -->
+        <record id="view_salamet_notification_kanban" model="ir.ui.view">
+            <field name="name">salamet.notification.kanban</field>
+            <field name="model">salamet.notification</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="priorite" class="o_kanban_small_column">
+                    <field name="titre"/>
+                    <field name="patiente_id"/>
+                    <field name="date_prevue"/>
+                    <field name="type_notification"/>
+                    <field name="priorite"/>
+                    <field name="state"/>
+                    <field name="jours_restants"/>
+                    <field name="medecin_responsable_id"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="patiente_id"/>
+                                            </strong>
+                                            <small class="o_kanban_record_subtitle text-muted">
+                                                <field name="titre"/>
+                                            </small>
+                                        </div>
+                                        <div class="o_kanban_record_top_right">
+                                           <span t-if="record.jours_restants.raw_value &lt; 0"
+      class="badge badge-danger">⏰</span>
+                                            <span t-if="record.priorite.raw_value == 'critique'"
+                                                  class="badge badge-danger">🚨</span>
+                                            <span t-if="record.priorite.raw_value == 'haute'"
+                                                  class="badge badge-warning">⚠️</span>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <div>📅 <field name="date_prevue"/></div>
+                                        <div>🔔 <field name="type_notification"/></div>
+                                        <div t-if="record.medecin_responsable_id.raw_value">
+                                            👨‍⚕️ <field name="medecin_responsable_id"/>
+                                        </div>
+                                        <div t-if="record.jours_restants.raw_value >= 0">
+                                            ⏳ <field name="jours_restants"/> jours restants
+                                        </div>
+                                        <div t-if="record.jours_restants.raw_value &lt; 0">
+    🚨 En retard de <t t-esc="Math.abs(record.jours_restants.raw_value)"/> jours
+</div>
+                                    </div>
+                                    <div class="o_kanban_record_bottom">
+                                        <div class="oe_kanban_bottom_left">
+                                            <span t-if="record.state.raw_value == 'en_attente'"
+                                                  class="badge badge-secondary">En attente</span>
+                                            <span t-if="record.state.raw_value == 'vue'"
+                                                  class="badge badge-info">Vue</span>
+                                            <span t-if="record.state.raw_value == 'traitee'"
+                                                  class="badge badge-success">Traitée</span>
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <button name="action_marquer_vue" type="object"
+                                                    class="btn btn-sm btn-outline-info"
+                                                    t-if="record.state.raw_value == 'en_attente'">
+                                                👁️
+                                            </button>
+                                            <button name="action_marquer_traitee" type="object"
+                                                    class="btn btn-sm btn-outline-success"
+                                                    t-if="record.state.raw_value in ['en_attente', 'vue']">
+                                                ✅
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+       <!-- Vue recherche notifications AMÉLIORÉE -->
+<record id="view_salamet_notification_search" model="ir.ui.view">
+    <field name="name">salamet.notification.search</field>
+    <field name="model">salamet.notification</field>
+    <field name="arch" type="xml">
+        <search string="Rechercher Notifications">
+            <field name="titre" string="Titre"/>
+            <field name="patiente_id" string="Patiente"/>
+            <field name="medecin_responsable_id" string="Médecin"/>
+
+            <!-- Filtres principaux -->
+            <filter string="🚨 Critiques" name="critiques"
+                    domain="[('priorite', '=', 'critique')]"/>
+            <filter string="⚠️ Priorité haute" name="haute_priorite"
+                    domain="[('priorite', '=', 'haute')]"/>
+            <filter string="⏰ En retard" name="en_retard"
+                    domain="[('date_prevue', '&lt;', context_today())]"/>
+            <filter string="📋 En attente" name="en_attente"
+                    domain="[('state', '=', 'en_attente')]"/>
+            <filter string="👁️ Vues" name="vues"
+                    domain="[('state', '=', 'vue')]"/>
+
+            <separator/>
+
+            <!-- Filtres par type -->
+            <filter string="🩺 Rappel consultation" name="rappel_consultation"
+                    domain="[('type_notification', '=', 'rappel_consultation')]"/>
+            <filter string="🧪 Rappel bilan" name="rappel_bilan"
+                    domain="[('type_notification', '=', 'rappel_bilan')]"/>
+            <filter string="🚨 Urgences" name="urgences"
+                    domain="[('type_notification', '=', 'urgence')]"/>
+            <filter string="🔍 Surveillance" name="surveillance"
+                    domain="[('type_notification', '=', 'surveillance_pathologie')]"/>
+            <filter string="🍼 Terme proche" name="terme_proche"
+                    domain="[('type_notification', '=', 'terme_proche')]"/>
+            <filter string="⚠️ Dépassement terme" name="depassement_terme"
+                    domain="[('type_notification', '=', 'depassement_terme')]"/>
+
+            <separator/>
+
+            <!-- Filtres par date -->
+            <filter string="📅 Aujourd'hui" name="today"
+                    domain="[('date_prevue', '=', context_today())]"/>
+            <filter string="📅 Cette semaine" name="this_week"
+                    domain="[('date_prevue', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday()))), ('date_prevue', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())))]"/>
+            <filter string="🔄 Récurrentes" name="recurrentes"
+                    domain="[('recurrente', '=', True)]"/>
+            <filter string="🤖 Automatiques" name="automatiques"
+                    domain="[('automatique', '=', True)]"/>
+
+            <group expand="0" string="Grouper par">
+                <filter string="Priorité" name="group_by_priorite"
+                        context="{'group_by': 'priorite'}"/>
+                <filter string="État" name="group_by_state"
+                        context="{'group_by': 'state'}"/>
+                <filter string="Type" name="group_by_type"
+                        context="{'group_by': 'type_notification'}"/>
+                <filter string="Médecin" name="group_by_medecin"
+                        context="{'group_by': 'medecin_responsable_id'}"/>
+                <filter string="Date prévue" name="group_by_date"
+                        context="{'group_by': 'date_prevue:day'}"/>
+                <filter string="Patiente" name="group_by_patiente"
+                        context="{'group_by': 'patiente_id'}"/>
+            </group>
+        </search>
+    </field>
+</record>
+
+        <!-- Vue calendrier notifications CORRIGÉE -->
+<record id="view_salamet_notification_calendar" model="ir.ui.view">
+    <field name="name">salamet.notification.calendar</field>
+    <field name="model">salamet.notification</field>
+    <field name="arch" type="xml">
+        <calendar string="Planning des Notifications"
+                  date_start="date_prevue"
+                  color="priorite"
+                  quick_create="0"
+                  event_open_popup="true"
+                  mode="month">
+            <field name="titre"/>
+            <field name="patiente_id"/>
+            <field name="type_notification"/>
+            <field name="priorite"/>
+            <field name="state"/>
+            <field name="medecin_responsable_id"/>
+        </calendar>
+    </field>
+</record>
+
+
+        <!-- Vue pivot pour analyses -->
+        <record id="view_salamet_notification_pivot" model="ir.ui.view">
+            <field name="name">salamet.notification.pivot</field>
+            <field name="model">salamet.notification</field>
+            <field name="arch" type="xml">
+                <pivot string="Analyse des Notifications">
+                    <field name="type_notification" type="row"/>
+                    <field name="priorite" type="col"/>
+                    <field name="state" type="col"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Vue graphique pour statistiques -->
+        <record id="view_salamet_notification_graph" model="ir.ui.view">
+            <field name="name">salamet.notification.graph</field>
+            <field name="model">salamet.notification</field>
+            <field name="arch" type="xml">
+                <graph string="Statistiques des Notifications" type="bar">
+                    <field name="type_notification"/>
+                    <field name="priorite" type="col"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Actions et menus -->
+        <record id="action_salamet_notification" model="ir.actions.act_window">
+            <field name="name">🔔 Notifications</field>
+            <field name="res_model">salamet.notification</field>
+            <field name="view_mode">kanban,list,form,calendar,pivot,graph</field>
+            <field name="context">{
+                'search_default_en_attente': 1,
+                'search_default_critiques': 1,
+                'search_default_haute_priorite': 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    🔔 Aucune notification pour le moment
+                </p>
+                <p>
+                    Les notifications vous alertent sur les situations nécessitant votre attention :
+                    <ul>
+                        <li>🩺 Consultations en retard</li>
+                        <li>🧪 Bilans manquants</li>
+                        <li>🚨 Situations d'urgence</li>
+                        <li>📅 Échéances importantes</li>
+                    </ul>
+                </p>
+            </field>
+        </record>
+
+        <!-- Action pour notifications urgentes -->
+        <record id="action_salamet_notification_urgentes" model="ir.actions.act_window">
+            <field name="name">🚨 Notifications Urgentes</field>
+            <field name="res_model">salamet.notification</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="domain">[('priorite', 'in', ['critique', 'haute']), ('state', 'in', ['en_attente', 'vue'])]</field>
+            <field name="context">{}</field>
+        </record>
+
+       <!-- Action pour notifications en retard CORRIGÉE -->
+<record id="action_salamet_notification_retard" model="ir.actions.act_window">
+    <field name="name">⏰ Notifications en Retard</field>
+    <field name="res_model">salamet.notification</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">[('jours_restants', '&lt;', 0), ('state', 'in', ['en_attente', 'vue'])]</field>
+    <field name="context">{}</field>
+</record>
+
+
+        <!-- Vues des wizards -->
+        <record id="view_salamet_notification_traitement_wizard_form" model="ir.ui.view">
+            <field name="name">salamet.notification.traitement.wizard.form</field>
+            <field name="model">salamet.notification.traitement.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Traiter la notification">
+                    <group>
+                        <field name="notification_id" readonly="1"/>
+                    </group>
+                    <group string="📝 Résultat de l'action">
+                        <field name="resultat_action" nolabel="1"
+                               placeholder="Décrivez l'action réalisée..."/>
+                    </group>
+                    <group string="💭 Observations">
+                        <field name="observations" nolabel="1"
+                               placeholder="Observations complémentaires..."/>
+                    </group>
+                    <group string="🔗 Actions complémentaires">
+                        <field name="creer_consultation" widget="boolean_toggle"/>
+                        <field name="creer_bilan" widget="boolean_toggle"/>
+                    </group>
+                    <footer>
+                        <button name="action_traiter" type="object"
+                                string="✅ Traiter" class="btn-primary"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_salamet_notification_report_wizard_form" model="ir.ui.view">
+            <field name="name">salamet.notification.report.wizard.form</field>
+            <field name="model">salamet.notification.report.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Reporter la notification">
+                    <group>
+                        <field name="notification_id" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="nouvelle_date"/>
+                        <field name="motif_report" placeholder="Motif du report..."/>
+                    </group>
+                    <footer>
+                        <button name="action_reporter" type="object"
+                                string="📅 Reporter" class="btn-warning"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

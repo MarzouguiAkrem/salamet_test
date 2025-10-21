@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Vue formulaire accouchement -->
+        <record id="view_salamet_accouchement_form" model="ir.ui.view">
+            <field name="name">salamet.accouchement.form</field>
+            <field name="model">salamet.accouchement</field>
+            <field name="arch" type="xml">
+                <form string="Accouchement">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="patiente_id" options="{'no_create': True, 'no_edit': True}"/>
+                                <field name="date_accouchement"/>
+                                <field name="terme_accouchement"/>
+                            </group>
+                            <group>
+                                <field name="type_accouchement"/>
+                                <field name="poids_naissance"/>
+                                <field name="sexe_enfant"/>
+                            </group>
+                        </group>
+                        <group string="Observations">
+                            <field name="complications" placeholder="Complications rencontrées lors de l'accouchement..."/>
+                            <field name="observations" placeholder="Observations générales..."/>
+                        </group>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- Vue liste accouchements -->
+        <record id="view_salamet_accouchement_tree" model="ir.ui.view">
+            <field name="name">salamet.accouchement.tree</field>
+            <field name="model">salamet.accouchement</field>
+            <field name="arch" type="xml">
+                <list string="Accouchements">
+                    <field name="name"/>
+                    <field name="patiente_id"/>
+                    <field name="date_accouchement"/>
+                    <field name="terme_accouchement"/>
+                    <field name="type_accouchement"/>
+                    <field name="poids_naissance"/>
+                    <field name="sexe_enfant"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vue calendrier accouchements (VERSION CORRIGÉE) -->
+        <record id="view_salamet_accouchement_calendar" model="ir.ui.view">
+            <field name="name">salamet.accouchement.calendar</field>
+            <field name="model">salamet.accouchement</field>
+            <field name="arch" type="xml">
+                <calendar string="Calendrier des Accouchements"
+                         date_start="date_accouchement"
+                         color="type_accouchement"
+                         event_open_popup="true"
+                         quick_create="0"
+                         mode="month">
+
+                    <!-- Champs disponibles dans le calendrier -->
+                    <field name="patiente_id"/>
+                    <field name="type_accouchement"/>
+                    <field name="terme_accouchement"/>
+                    <field name="poids_naissance"/>
+                    <field name="sexe_enfant"/>
+                    <field name="complications"/>
+                    <field name="observations"/>
+                </calendar>
+            </field>
+        </record>
+
+        <!-- Vue kanban accouchements -->
+        <record id="view_salamet_accouchement_kanban" model="ir.ui.view">
+            <field name="name">salamet.accouchement.kanban</field>
+            <field name="model">salamet.accouchement</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="patiente_id"/>
+                    <field name="date_accouchement"/>
+                    <field name="type_accouchement"/>
+                    <field name="poids_naissance"/>
+                    <field name="sexe_enfant"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_card oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="patiente_id"/>
+                                            </strong>
+                                        </div>
+                                        <div class="o_kanban_record_top_right">
+                                            <span t-if="record.type_accouchement.raw_value == 'voie_basse'"
+                                                  class="badge badge-success">Voie basse</span>
+                                            <span t-if="record.type_accouchement.raw_value == 'cesarienne'"
+                                                  class="badge badge-info">Césarienne</span>
+                                            <span t-if="record.type_accouchement.raw_value == 'forceps'"
+                                                  class="badge badge-warning">Forceps</span>
+                                            <span t-if="record.type_accouchement.raw_value == 'ventouse'"
+                                                  class="badge badge-warning">Ventouse</span>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <div>📅 <field name="date_accouchement"/></div>
+                                        <div t-if="record.sexe_enfant.raw_value">
+                                            <span t-if="record.sexe_enfant.raw_value == 'masculin'">👶</span>
+                                            <span t-if="record.sexe_enfant.raw_value == 'feminin'">👧</span>
+                                            <field name="sexe_enfant"/>
+                                        </div>
+                                        <div t-if="record.poids_naissance.raw_value">
+                                            ⚖️ <field name="poids_naissance"/> g
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Vue recherche accouchements -->
+        <record id="view_salamet_accouchement_search" model="ir.ui.view">
+            <field name="name">salamet.accouchement.search</field>
+            <field name="model">salamet.accouchement</field>
+            <field name="arch" type="xml">
+                <search string="Rechercher Accouchements">
+                    <field name="patiente_id" string="Patiente"/>
+                    <field name="date_accouchement" string="Date"/>
+                    <field name="type_accouchement"/>
+
+                    <filter string="Voie basse" name="voie_basse" domain="[('type_accouchement', '=', 'voie_basse')]"/>
+                    <filter string="Césarienne" name="cesarienne" domain="[('type_accouchement', '=', 'cesarienne')]"/>
+                    <filter string="Instrumental" name="instrumental" domain="[('type_accouchement', 'in', ['forceps', 'ventouse'])]"/>
+                    <separator/>
+                    <filter string="Cette année" name="this_year"
+                            domain="[('date_accouchement', '>=', datetime.datetime.now().strftime('%Y-01-01'))]"/>
+                    <filter string="Ce mois" name="this_month"
+                            domain="[('date_accouchement', '>=', datetime.datetime.now().strftime('%Y-%m-01'))]"/>
+                    <filter string="Cette semaine" name="this_week"
+                            domain="[('date_accouchement', '>=', (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+
+                    <group expand="0" string="Grouper par">
+                        <filter string="Patiente" name="group_by_patiente" context="{'group_by': 'patiente_id'}"/>
+                        <filter string="Type d'accouchement" name="group_by_type" context="{'group_by': 'type_accouchement'}"/>
+                        <filter string="Mois" name="group_by_month" context="{'group_by': 'date_accouchement:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action accouchements avec vue calendrier -->
+        <record id="action_salamet_accouchement" model="ir.actions.act_window">
+            <field name="name">Accouchements</field>
+            <field name="res_model">salamet.accouchement</field>
+            <field name="view_mode">kanban,list,form,calendar</field>
+            <field name="search_view_id" ref="view_salamet_accouchement_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Créer un nouvel accouchement
+                </p>
+                <p>
+                    Enregistrez les accouchements des patientes suivies.
+                </p>
+            </field>
+        </record>
+        <!-- Action pour nouvel accouchement -->
+<record id="action_salamet_nouvel_accouchement" model="ir.actions.act_window">
+    <field name="name">Nouvel Accouchement</field>
+    <field name="res_model">salamet.accouchement</field>
+    <field name="view_mode">form</field>
+    <field name="target">current</field>
+    <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+            Enregistrer un nouvel accouchement
+        </p>
+        <p>
+            Documentez les détails de l'accouchement.
+        </p>
+    </field>
+</record>
+
+<!-- Action pour calendrier des accouchements -->
+<record id="action_salamet_accouchement_calendrier" model="ir.actions.act_window">
+    <field name="name">Calendrier des Accouchements</field>
+    <field name="res_model">salamet.accouchement</field>
+    <field name="view_mode">calendar,kanban,list,form</field>
+    <field name="view_id" ref="view_salamet_accouchement_calendar"/>
+    <field name="help" type="html">
+        <p class="o_view_nocontent_smiling_face">
+            Calendrier des accouchements
+        </p>
+        <p>
+            Visualisez les accouchements sur le calendrier.
+        </p>
+    </field>
+</record>
+
+
+    </data>
+</odoo>
