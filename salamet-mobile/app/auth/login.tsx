@@ -77,7 +77,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      console.log('🔐 [LOGIN] Tentative de connexion...');
+      console.log('🔐 [LOGIN] Tentative de connexion..');
       await login(email, password);
       console.log('✅ [LOGIN] Connexion réussie');
     } catch (error: any) {
